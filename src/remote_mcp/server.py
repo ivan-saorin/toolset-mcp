@@ -79,7 +79,7 @@ async def system_info() -> Dict[str, Any]:
 @mcp.tool()
 async def calculate(
     a: float,
-    b: Optional[float] = None,
+    b: float = None,
     operation: str = "add"
 ) -> Dict[str, Any]:
     """
@@ -96,7 +96,7 @@ async def calculate(
 @mcp.tool()
 async def calculate_advanced(
     expression: str,
-    variables: Optional[Dict[str, float]] = None
+    variables: Dict[str, float] = None
 ) -> Dict[str, Any]:
     """
     Evaluate mathematical expressions safely
@@ -211,10 +211,10 @@ async def task_create(
     title: str,
     description: str = "",
     priority: str = "medium",
-    category: Optional[str] = None,
-    tags: Optional[List[str]] = None,
-    due_date: Optional[str] = None,
-    estimated_hours: Optional[float] = None
+    category: str = None,
+    tags: str = None,  # Accept as string, parse internally
+    due_date: str = None,
+    estimated_hours: str = None  # Accept as string, parse internally
 ) -> Dict[str, Any]:
     """
     Create a new task with advanced options
@@ -228,17 +228,14 @@ async def task_create(
         due_date: Due date (ISO format)
         estimated_hours: Estimated hours to complete
     """
-    # Handle parameter conversion for tags and estimated_hours
-    # FastMCP might pass them in different formats
-    if tags is not None and not isinstance(tags, list):
-        # If tags is a string, split by comma
-        if isinstance(tags, str):
-            tags = [t.strip() for t in tags.split(',') if t.strip()]
-        else:
-            tags = None
+    # Parse tags from string (comma-separated)
+    if tags is not None and isinstance(tags, str):
+        tags = [t.strip() for t in tags.split(',') if t.strip()]
+    else:
+        tags = None
     
+    # Parse estimated_hours from string
     if estimated_hours is not None:
-        # Ensure estimated_hours is a float
         try:
             estimated_hours = float(estimated_hours)
         except (ValueError, TypeError):
@@ -252,9 +249,9 @@ async def task_create(
 
 @mcp.tool()
 async def task_list(
-    status: Optional[str] = None,
-    priority: Optional[str] = None,
-    category: Optional[str] = None,
+    status: str = None,
+    priority: str = None,
+    category: str = None,
     overdue: bool = False
 ) -> Dict[str, Any]:
     """
@@ -300,8 +297,8 @@ async def task_delete(
 @mcp.tool()
 async def task_complete(
     task_id: str,
-    completion_notes: Optional[str] = None,
-    actual_hours: Optional[float] = None
+    completion_notes: str = None,
+    actual_hours: str = None  # Accept as string, parse internally
 ) -> Dict[str, Any]:
     """
     Mark a task as complete
