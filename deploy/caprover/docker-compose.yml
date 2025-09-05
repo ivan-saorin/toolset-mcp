@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  web:
+    image: $$cap_appname
+    environment:
+      # Port configuration (CapRover provides this)
+      PORT: 80
+      HOST: 0.0.0.0
+      
+      # Filesystem configuration - specify allowed directories
+      # Multiple directories separated by commas
+      ALLOWED_DIRECTORIES: "/data/shared,/data/user,/data/projects,/data/workspace"
+      
+      # Optional: Python settings
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONPATH: /app/src
+    
+    volumes:
+      # Map host directories to container paths
+      # Adjust these based on your CapRover setup
+      - captain-shared-data:/data/shared
+      - captain-user-data:/data/user
+      - captain-projects:/data/projects
+      - captain-workspace:/data/workspace
+    
+    ports:
+      - "80:80"
+    
+    # Health check for CapRover
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      retries: 3
+
+# Define named volumes that CapRover will manage
+volumes:
+  captain-shared-data:
+    driver: local
+  captain-user-data:
+    driver: local
+  captain-projects:
+    driver: local
+  captain-workspace:
+    driver: local

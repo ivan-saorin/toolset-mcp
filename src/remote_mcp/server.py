@@ -6,6 +6,9 @@ Atlas Toolset MCP Server v3 - Modular architecture with enhanced features
 import os
 import asyncio
 import logging
+import json
+import shutil
+from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from fastmcp import FastMCP
@@ -31,13 +34,67 @@ logger = logging.getLogger("atlas-toolset")
 
 # Initialize MCP server
 mcp = FastMCP("Atlas Toolset MCP")
-mcp.description = "Enhanced utility toolset with calculator, text analysis, task management, and time features"
+mcp.description = "Enhanced utility toolset with calculator, text analysis, task management, time, and filesystem features"
 
 # Initialize feature engines
 calculator = CalculatorEngine()
 text_analyzer = TextAnalyzerEngine()
 task_manager = TaskManagerEngine()
 time_engine = TimeEngine()
+
+# ============================================================================
+# FILESYSTEM CONFIGURATION
+# ============================================================================
+
+# Configure allowed directories for filesystem operations
+ALLOWED_DIRECTORIES = []
+env_dirs = os.environ.get("ALLOWED_DIRECTORIES", "")
+if env_dirs:
+    ALLOWED_DIRECTORIES = [Path(d.strip()).resolve() for d in env_dirs.split(",")]
+else:
+    # Default to common safe directories
+    home = Path.home()
+    ALLOWED_DIRECTORIES = [
+        home / "Documents",
+        home / "Downloads",
+        Path("/tmp"),
+        Path("/projects") if Path("/projects").exists() else None,
+    ]
+    ALLOWED_DIRECTORIES = [d for d in ALLOWED_DIRECTORIES if d and d.exists()]
+
+# Track deleted files (fake deletion ONLY - no real deletion for safety)
+# Real file deletion is intentionally NOT supported to prevent data loss
+DELETED_FILES = set()
+DELETED_FILES_METADATA = {}
+
+def is_path_allowed(path: Path) -> bool:
+    """Check if a path is within allowed directories"""
+    try:
+        path = path.resolve()
+        for allowed_dir in ALLOWED_DIRECTORIES:
+            if path.is_relative_to(allowed_dir):
+                return True
+        return False
+    except Exception:
+        return False
+
+def validate_path(path_str: str) -> Path:
+    """Validate and return a Path object if allowed"""
+    path = Path(path_str).expanduser().resolve()
+    if not is_path_allowed(path):
+        raise ValueError(f"Access denied: path {path} is outside allowed directories")
+    # Check if file is marked as deleted
+    if str(path) in DELETED_FILES:
+        raise FileNotFoundError(f"File {path} has been marked as deleted")
+    return path
+
+def validate_parent_path(path_str: str) -> Path:
+    """Validate parent directory for new files"""
+    path = Path(path_str).expanduser().resolve()
+    parent = path.parent
+    if not is_path_allowed(parent):
+        raise ValueError(f"Access denied: parent directory {parent} is outside allowed directories")
+    return path
 
 # ============================================================================
 # SYSTEM INFO
@@ -48,7 +105,7 @@ async def system_info() -> Dict[str, Any]:
     """Get system information and server status"""
     return {
         "server_name": "Atlas Toolset MCP",
-        "version": "3.0.0",
+        "version": "3.1.0",
         "timestamp": datetime.now().isoformat(),
         "transport": "streamable-http",
         "features": {
@@ -68,8 +125,604 @@ async def system_info() -> Dict[str, Any]:
                 "version": time_engine.version,
                 "formats": ["italian", "iso", "us"],
                 "shortcuts": ["now", "yesterday", "tomorrow", "EoD", "EoM", "last_month", "next_month"]
+            },
+            "filesystem": {
+                "version": "1.0.0",
+                "allowed_directories": [str(d) for d in ALLOWED_DIRECTORIES],
+                "deleted_files_count": len(DELETED_FILES),
+                "deletion_mode": "fake_only",
+                "note": "All deletions are reversible - files are never actually removed"
             }
         }
+    }
+
+# ============================================================================
+# FILESYSTEM TOOLS
+# ============================================================================
+
+@mcp.tool()
+async def fs_read_file(path: str) -> Dict[str, Any]:
+    """
+    Read the complete contents of a file from the file system. Handles various text encodings and provides detailed error messages if the file cannot be read. Use this tool when you need to examine the contents of a single file. Only works within allowed directories.
+    
+    Args:
+        path: Path to the file to read
+    """
+    try:
+        file_path = validate_path(path)
+        if not file_path.is_file():
+            return {"error": f"Path {path} is not a file"}
+        
+        content = file_path.read_text(encoding="utf-8")
+        return {
+            "content": content,
+            "path": str(file_path),
+            "size": len(content),
+            "encoding": "utf-8"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_read_multiple_files(paths: List[str]) -> Dict[str, Any]:
+    """
+    Read the contents of multiple files simultaneously. This is more efficient than reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within allowed directories.
+    
+    Args:
+        paths: List of file paths to read
+    """
+    results = {}
+    errors = {}
+    
+    for path_str in paths:
+        try:
+            file_path = validate_path(path_str)
+            if not file_path.is_file():
+                errors[path_str] = f"Path {path_str} is not a file"
+                continue
+            
+            content = file_path.read_text(encoding="utf-8")
+            results[path_str] = {
+                "content": content,
+                "size": len(content),
+                "encoding": "utf-8"
+            }
+        except Exception as e:
+            errors[path_str] = str(e)
+    
+    return {
+        "files": results,
+        "errors": errors,
+        "total_files": len(paths),
+        "successful": len(results),
+        "failed": len(errors)
+    }
+
+@mcp.tool()
+async def fs_write_file(path: str, content: str) -> Dict[str, Any]:
+    """
+    Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. Only works within allowed directories.
+    
+    Args:
+        path: Path where to write the file
+        content: Content to write to the file
+    """
+    try:
+        file_path = validate_parent_path(path)
+        
+        # Create parent directory if it doesn't exist
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Write content
+        file_path.write_text(content, encoding="utf-8")
+        
+        # Remove from deleted files if it was marked as deleted
+        if str(file_path) in DELETED_FILES:
+            DELETED_FILES.remove(str(file_path))
+            DELETED_FILES_METADATA.pop(str(file_path), None)
+        
+        return {
+            "success": True,
+            "path": str(file_path),
+            "size": len(content),
+            "message": f"Successfully wrote {len(content)} bytes to {file_path}"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_edit_file(
+    path: str,
+    edits: List[Dict[str, str]],
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """
+    Make line-based edits to a text file. Each edit replaces exact line sequences with new content. Returns a git-style diff showing the changes made. Only works within allowed directories.
+    
+    Args:
+        path: Path to the file to edit
+        edits: List of edits, each with 'old_text' and 'new_text'
+        dry_run: If True, preview changes without applying them
+    """
+    try:
+        file_path = validate_path(path)
+        if not file_path.is_file():
+            return {"error": f"Path {path} is not a file"}
+        
+        original_content = file_path.read_text(encoding="utf-8")
+        modified_content = original_content
+        
+        changes_made = []
+        for edit in edits:
+            old_text = edit.get("old_text", "")
+            new_text = edit.get("new_text", "")
+            
+            if old_text in modified_content:
+                modified_content = modified_content.replace(old_text, new_text)
+                changes_made.append({
+                    "old": old_text[:50] + "..." if len(old_text) > 50 else old_text,
+                    "new": new_text[:50] + "..." if len(new_text) > 50 else new_text
+                })
+        
+        if not dry_run and changes_made:
+            file_path.write_text(modified_content, encoding="utf-8")
+        
+        return {
+            "success": True,
+            "path": str(file_path),
+            "changes_made": len(changes_made),
+            "dry_run": dry_run,
+            "edits": changes_made,
+            "message": f"{'Preview of' if dry_run else 'Applied'} {len(changes_made)} edits to {file_path}"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_create_directory(path: str) -> Dict[str, Any]:
+    """
+    Create a new directory or ensure a directory exists. Can create multiple nested directories in one operation. If the directory already exists, this operation will succeed silently. Perfect for setting up directory structures for projects or ensuring required paths exist. Only works within allowed directories.
+    
+    Args:
+        path: Path of the directory to create
+    """
+    try:
+        dir_path = validate_parent_path(path)
+        dir_path.mkdir(parents=True, exist_ok=True)
+        
+        return {
+            "success": True,
+            "path": str(dir_path),
+            "exists": True,
+            "message": f"Directory {dir_path} created/verified successfully"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_list_directory(path: str) -> Dict[str, Any]:
+    """
+    Get a detailed listing of all files and directories in a specified path. Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes. This tool is essential for understanding directory structure and finding specific files within a directory. Only works within allowed directories.
+    
+    Args:
+        path: Path of the directory to list
+    """
+    try:
+        dir_path = validate_path(path)
+        if not dir_path.is_dir():
+            return {"error": f"Path {path} is not a directory"}
+        
+        items = []
+        for item in sorted(dir_path.iterdir()):
+            # Skip if marked as deleted
+            if str(item) in DELETED_FILES:
+                continue
+                
+            item_type = "[DIR]" if item.is_dir() else "[FILE]"
+            items.append(f"{item_type} {item.name}")
+        
+        return {
+            "path": str(dir_path),
+            "items": items,
+            "total": len(items),
+            "files": sum(1 for i in items if i.startswith("[FILE]")),
+            "directories": sum(1 for i in items if i.startswith("[DIR]"))
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_directory_tree(path: str) -> Dict[str, Any]:
+    """
+    Get a recursive tree view of files and directories as a JSON structure. Each entry includes 'name', 'type' (file/directory), and 'children' for directories. Files have no children array, while directories always have a children array (which may be empty). The output is formatted with 2-space indentation for readability. Only works within allowed directories.
+    
+    Args:
+        path: Root path for the directory tree
+    """
+    try:
+        root_path = validate_path(path)
+        if not root_path.is_dir():
+            return {"error": f"Path {path} is not a directory"}
+        
+        def build_tree(dir_path: Path) -> Dict[str, Any]:
+            tree = {
+                "name": dir_path.name,
+                "type": "directory",
+                "path": str(dir_path),
+                "children": []
+            }
+            
+            try:
+                for item in sorted(dir_path.iterdir()):
+                    # Skip if marked as deleted
+                    if str(item) in DELETED_FILES:
+                        continue
+                        
+                    if item.is_dir():
+                        tree["children"].append(build_tree(item))
+                    else:
+                        tree["children"].append({
+                            "name": item.name,
+                            "type": "file",
+                            "path": str(item),
+                            "size": item.stat().st_size
+                        })
+            except PermissionError:
+                tree["error"] = "Permission denied"
+            
+            return tree
+        
+        tree = build_tree(root_path)
+        return {
+            "tree": tree,
+            "root": str(root_path)
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_move_file(source: str, destination: str) -> Dict[str, Any]:
+    """
+    Move or rename files and directories. Can move files between directories and rename them in a single operation. If the destination exists, the operation will fail. Works across different directories and can be used for simple renaming within the same directory. Both source and destination must be within allowed directories.
+    
+    Args:
+        source: Source path
+        destination: Destination path
+    """
+    try:
+        src_path = validate_path(source)
+        dst_path = validate_parent_path(destination)
+        
+        if not src_path.exists():
+            return {"error": f"Source path {source} does not exist"}
+        
+        if dst_path.exists():
+            return {"error": f"Destination path {destination} already exists"}
+        
+        # Create parent directory if needed
+        dst_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Move the file/directory
+        shutil.move(str(src_path), str(dst_path))
+        
+        # Update deleted files tracking if source was in it
+        if str(src_path) in DELETED_FILES:
+            DELETED_FILES.remove(str(src_path))
+            DELETED_FILES.add(str(dst_path))
+            if str(src_path) in DELETED_FILES_METADATA:
+                DELETED_FILES_METADATA[str(dst_path)] = DELETED_FILES_METADATA.pop(str(src_path))
+        
+        return {
+            "success": True,
+            "source": str(src_path),
+            "destination": str(dst_path),
+            "message": f"Successfully moved {src_path} to {dst_path}"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_copy_file(source: str, destination: str) -> Dict[str, Any]:
+    """
+    Copy a file to a new location. The destination can be a file path or a directory. If destination is a directory, the file will be copied with the same name. Only works within allowed directories.
+    
+    Args:
+        source: Source file path
+        destination: Destination path (file or directory)
+    """
+    try:
+        src_path = validate_path(source)
+        
+        if not src_path.is_file():
+            return {"error": f"Source path {source} is not a file"}
+        
+        # Determine destination path
+        dst_path = Path(destination).expanduser().resolve()
+        if dst_path.is_dir():
+            dst_path = dst_path / src_path.name
+        
+        dst_path = validate_parent_path(str(dst_path))
+        
+        # Create parent directory if needed
+        dst_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Copy the file
+        shutil.copy2(str(src_path), str(dst_path))
+        
+        return {
+            "success": True,
+            "source": str(src_path),
+            "destination": str(dst_path),
+            "size": dst_path.stat().st_size,
+            "message": f"Successfully copied {src_path} to {dst_path}"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_copy_directory(
+    source: str, 
+    destination: str,
+    exclude_patterns: List[str] = None
+) -> Dict[str, Any]:
+    """
+    Copy a directory recursively to a new location. Can exclude files matching specific patterns. Only works within allowed directories.
+    
+    Args:
+        source: Source directory path
+        destination: Destination directory path
+        exclude_patterns: List of patterns to exclude (e.g., ['*.tmp', '__pycache__'])
+    """
+    try:
+        src_path = validate_path(source)
+        
+        if not src_path.is_dir():
+            return {"error": f"Source path {source} is not a directory"}
+        
+        dst_path = validate_parent_path(destination)
+        
+        # Create ignore function for patterns
+        def ignore_patterns(dir_path, names):
+            if not exclude_patterns:
+                return set()
+            
+            ignored = set()
+            for name in names:
+                full_path = Path(dir_path) / name
+                # Check if marked as deleted
+                if str(full_path) in DELETED_FILES:
+                    ignored.add(name)
+                    continue
+                # Check patterns
+                for pattern in exclude_patterns:
+                    if Path(name).match(pattern):
+                        ignored.add(name)
+                        break
+            return ignored
+        
+        # Copy the directory
+        shutil.copytree(
+            str(src_path), 
+            str(dst_path),
+            ignore=ignore_patterns if exclude_patterns else None,
+            dirs_exist_ok=True
+        )
+        
+        # Count copied items
+        file_count = sum(1 for _ in dst_path.rglob("*") if _.is_file())
+        dir_count = sum(1 for _ in dst_path.rglob("*") if _.is_dir())
+        
+        return {
+            "success": True,
+            "source": str(src_path),
+            "destination": str(dst_path),
+            "files_copied": file_count,
+            "directories_created": dir_count,
+            "excluded_patterns": exclude_patterns or [],
+            "message": f"Successfully copied directory {src_path} to {dst_path}"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_delete_file(
+    path: str
+) -> Dict[str, Any]:
+    """
+    Delete a file (fake deletion - marks the file as deleted without actually removing it from disk). 
+    The file can be restored later using fs_restore_deleted. Only works within allowed directories.
+    
+    Args:
+        path: Path to the file to delete
+    """
+    try:
+        file_path = validate_path(path)
+        
+        # ONLY fake deletion - no real deletion allowed
+        if not file_path.exists():
+            return {"error": f"Path {path} does not exist"}
+        
+        DELETED_FILES.add(str(file_path))
+        DELETED_FILES_METADATA[str(file_path)] = {
+            "deleted_at": datetime.now().isoformat(),
+            "original_size": file_path.stat().st_size if file_path.is_file() else None,
+            "type": "file" if file_path.is_file() else "directory"
+        }
+        message = f"Deleted {file_path} (file still exists on disk, can be restored)"
+        
+        return {
+            "success": True,
+            "path": str(file_path),
+            "message": message,
+            "can_restore": True
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_restore_deleted(path: str) -> Dict[str, Any]:
+    """
+    Restore a file that was marked as deleted (fake deletion). Only works for files that were soft-deleted.
+    
+    Args:
+        path: Path of the file to restore
+    """
+    try:
+        file_path = Path(path).expanduser().resolve()
+        path_str = str(file_path)
+        
+        if path_str not in DELETED_FILES:
+            return {"error": f"Path {path} is not in the deleted files list"}
+        
+        # Verify file still exists on disk
+        if not file_path.exists():
+            return {"error": f"Path {path} no longer exists on disk - cannot restore"}
+        
+        # Restore the file
+        DELETED_FILES.remove(path_str)
+        metadata = DELETED_FILES_METADATA.pop(path_str, {})
+        
+        return {
+            "success": True,
+            "path": path_str,
+            "restored": True,
+            "deleted_at": metadata.get("deleted_at", "unknown"),
+            "message": f"Successfully restored {file_path}"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_list_deleted() -> Dict[str, Any]:
+    """
+    List all files that have been marked as deleted (fake deletion).
+    """
+    deleted_list = []
+    for path_str in DELETED_FILES:
+        metadata = DELETED_FILES_METADATA.get(path_str, {})
+        deleted_list.append({
+            "path": path_str,
+            "deleted_at": metadata.get("deleted_at", "unknown"),
+            "type": metadata.get("type", "unknown"),
+            "size": metadata.get("original_size")
+        })
+    
+    return {
+        "deleted_files": deleted_list,
+        "total": len(deleted_list),
+        "message": f"Found {len(deleted_list)} deleted files/directories"
+    }
+
+@mcp.tool()
+async def fs_search_files(
+    path: str,
+    pattern: str,
+    exclude_patterns: List[str] = None
+) -> Dict[str, Any]:
+    """
+    Recursively search for files and directories matching a pattern. Searches through all subdirectories from the starting path. The search is case-insensitive and matches partial names. Returns full paths to all matching items. Great for finding files when you don't know their exact location. Only searches within allowed directories.
+    
+    Args:
+        path: Starting directory for search
+        pattern: Search pattern (case-insensitive partial match)
+        exclude_patterns: Patterns to exclude from search
+    """
+    try:
+        search_path = validate_path(path)
+        if not search_path.is_dir():
+            return {"error": f"Path {path} is not a directory"}
+        
+        pattern_lower = pattern.lower()
+        matches = []
+        exclude_patterns = exclude_patterns or []
+        
+        for item_path in search_path.rglob("*"):
+            # Skip if marked as deleted
+            if str(item_path) in DELETED_FILES:
+                continue
+            
+            # Check exclude patterns
+            skip = False
+            for exclude_pattern in exclude_patterns:
+                if item_path.match(exclude_pattern):
+                    skip = True
+                    break
+            if skip:
+                continue
+            
+            # Check if name matches pattern
+            if pattern_lower in item_path.name.lower():
+                matches.append({
+                    "path": str(item_path),
+                    "name": item_path.name,
+                    "type": "directory" if item_path.is_dir() else "file",
+                    "size": item_path.stat().st_size if item_path.is_file() else None
+                })
+        
+        return {
+            "pattern": pattern,
+            "search_path": str(search_path),
+            "matches": matches,
+            "total": len(matches),
+            "excluded_patterns": exclude_patterns
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_get_file_info(path: str) -> Dict[str, Any]:
+    """
+    Retrieve detailed metadata about a file or directory. Returns comprehensive information including size, creation time, last modified time, permissions, and type. This tool is perfect for understanding file characteristics without reading the actual content. Only works within allowed directories.
+    
+    Args:
+        path: Path to the file or directory
+    """
+    try:
+        file_path = validate_path(path)
+        if not file_path.exists():
+            return {"error": f"Path {path} does not exist"}
+        
+        stat = file_path.stat()
+        
+        info = {
+            "path": str(file_path),
+            "name": file_path.name,
+            "type": "directory" if file_path.is_dir() else "file",
+            "size": stat.st_size,
+            "size_human": f"{stat.st_size:,} bytes",
+            "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+            "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+            "accessed": datetime.fromtimestamp(stat.st_atime).isoformat(),
+            "permissions": oct(stat.st_mode)[-3:],
+            "is_symlink": file_path.is_symlink(),
+            "is_hidden": file_path.name.startswith(".")
+        }
+        
+        if file_path.is_dir():
+            # Count contents for directories
+            try:
+                contents = list(file_path.iterdir())
+                info["contents"] = {
+                    "total": len(contents),
+                    "files": sum(1 for p in contents if p.is_file() and str(p) not in DELETED_FILES),
+                    "directories": sum(1 for p in contents if p.is_dir() and str(p) not in DELETED_FILES)
+                }
+            except PermissionError:
+                info["contents"] = {"error": "Permission denied"}
+        
+        return info
+    except Exception as e:
+        return {"error": str(e)}
+
+@mcp.tool()
+async def fs_list_allowed_directories() -> Dict[str, Any]:
+    """
+    Returns the list of directories that this server is allowed to access. Use this to understand which directories are available before trying to access files.
+    """
+    return {
+        "allowed_directories": [str(d) for d in ALLOWED_DIRECTORIES],
+        "total": len(ALLOWED_DIRECTORIES),
+        "note": "Only operations within these directories are permitted"
     }
 
 # ============================================================================
@@ -430,8 +1083,8 @@ async def health_check(request):
         {
             "status": "healthy",
             "service": "Atlas Toolset MCP",
-            "version": "3.0.0",
-            "features": ["calculator", "text_analyzer", "task_manager", "time"],
+            "version": "3.1.0",
+            "features": ["calculator", "text_analyzer", "task_manager", "time", "filesystem"],
             "timestamp": datetime.now().isoformat()
         },
         status_code=200
@@ -474,10 +1127,11 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     host = os.environ.get("HOST", "0.0.0.0")
     
-    logger.info(f"Starting Atlas Toolset MCP Server v3.0.0")
+    logger.info(f"Starting Atlas Toolset MCP Server v3.1.0")
     logger.info(f"Server will be available at {host}:{port}/mcp")
     logger.info(f"Health check at {host}:{port}/health")
-    logger.info(f"Features loaded: calculator, text_analyzer, task_manager, time")
+    logger.info(f"Features loaded: calculator, text_analyzer, task_manager, time, filesystem")
+    logger.info(f"Filesystem allowed directories: {[str(d) for d in ALLOWED_DIRECTORIES]}")
     logger.info(f"Italian date format enabled with shortcuts")
     
     try:

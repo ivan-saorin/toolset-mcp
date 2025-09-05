@@ -17,7 +17,7 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     host = os.environ.get("HOST", "0.0.0.0")
     
-    print(f"Starting Atlas Toolset MCP Server v3.0.0")
+    print(f"Starting Atlas Toolset MCP Server v3.1.0")
     print("-" * 60)
     print(f"Server endpoints:")
     print(f"  Health check: http://{host}:{port}/")
@@ -29,6 +29,7 @@ if __name__ == "__main__":
     print(f"  • Text Analyzer (readability, sentiment, keywords)")
     print(f"  • Task Manager (priorities, dependencies, tracking)")
     print(f"  • Time Utilities (Italian format, shortcuts)")
+    print(f"  • Filesystem (read, write, copy, move, delete, search)")
     print(f"")
     print(f"Transport: streamable-http")
     print(f"Test with: npx @modelcontextprotocol/inspector --url http://localhost:{port}/mcp")

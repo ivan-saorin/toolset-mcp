@@ -38,6 +38,10 @@ WORKDIR /app
 COPY src/ ./src/
 COPY run_server.py ./
 
+# Create data directories that will be used for volume mounts
+RUN mkdir -p /data/shared /data/user /data/projects /data/workspace && \
+    chmod -R 755 /data
+
 # Health check for CapRover
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost/health || exit 1
