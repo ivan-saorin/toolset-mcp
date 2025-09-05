@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Direct runner for the remote MCP server
+Direct runner for the Atlas Toolset MCP server
 """
 
 import sys
@@ -17,12 +17,18 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     host = os.environ.get("HOST", "0.0.0.0")
     
-    print(f"Starting Atlas Remote MCP Server v2.0.0")
+    print(f"Starting Atlas Toolset MCP Server v3.0.0")
     print("-" * 60)
     print(f"Server endpoints:")
     print(f"  Health check: http://{host}:{port}/")
     print(f"  Health check: http://{host}:{port}/health")
     print(f"  MCP endpoint: http://{host}:{port}/mcp")
+    print(f"")
+    print(f"Features:")
+    print(f"  • Calculator (advanced math, statistics, financial)")
+    print(f"  • Text Analyzer (readability, sentiment, keywords)")
+    print(f"  • Task Manager (priorities, dependencies, tracking)")
+    print(f"  • Time Utilities (Italian format, shortcuts)")
     print(f"")
     print(f"Transport: streamable-http")
     print(f"Test with: npx @modelcontextprotocol/inspector --url http://localhost:{port}/mcp")

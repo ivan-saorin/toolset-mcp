@@ -1,7 +1,6 @@
 """
-Remote MCP Server Package
-
-A clean implementation using FastMCP
+Atlas Toolset MCP - Enhanced utility toolset server
 """
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
+__all__ = ['server']

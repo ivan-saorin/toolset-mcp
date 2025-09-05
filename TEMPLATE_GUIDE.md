@@ -15,7 +15,7 @@ This guide will help you transform this template into your own MCP server.
 
 ```bash
 # Clone your new repository
-git clone https://github.com/YOUR_USERNAME/your-repo-name.git
+git clone https://github.com/ivan-saorin/toolset-mcp.git
 cd your-repo-name
 
 # Create virtual environment
@@ -32,7 +32,7 @@ pip install -r requirements-dev.txt  # For development
 #### Update Metadata
 
 1. Edit `pyproject.toml`:
-   - Change `name` to your server name
+   - Change `name` to Toolset MCP
    - Update `authors` with your information
    - Modify `description`
    - Update all URLs to point to your repository
@@ -43,7 +43,7 @@ pip install -r requirements-dev.txt  # For development
    - Modify badges to point to your repository
 
 3. Edit `src/remote_mcp/server.py`:
-   - Change the server name in `FastMCP("Your Server Name")`
+   - Change the server name in `FastMCP("Toolset MCP")`
    - Update the description
 
 #### Remove Example Tools
