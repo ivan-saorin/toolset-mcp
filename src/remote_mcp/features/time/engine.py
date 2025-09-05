@@ -399,66 +399,85 @@ class TimeEngine(BaseFeature):
         now = datetime.now()
         result = now
         
+        # Track if any valid keyword was found
+        valid_keyword_found = False
+        
         # Split shortcut into parts
         parts = shortcut.split()
         
         for part in parts:
             if part == "now":
                 result = now
+                valid_keyword_found = True
             elif part == "yesterday":
                 result = result - timedelta(days=1)
+                valid_keyword_found = True
             elif part == "tomorrow":
                 result = result + timedelta(days=1)
+                valid_keyword_found = True
             elif part == "last_month" or part == "last month":
                 result = self._add_months(result, -1)
+                valid_keyword_found = True
             elif part == "next_month" or part == "next month":
                 result = self._add_months(result, 1)
+                valid_keyword_found = True
             elif part == "eod" or part == "end_of_day":
                 result = result.replace(hour=23, minute=59, second=59, microsecond=999999)
+                valid_keyword_found = True
             elif part == "eom" or part == "end_of_month":
                 # Get last day of the month
                 last_day = monthrange(result.year, result.month)[1]
                 result = result.replace(day=last_day)
+                valid_keyword_found = True
             elif part == "sod" or part == "start_of_day":
                 result = result.replace(hour=0, minute=0, second=0, microsecond=0)
+                valid_keyword_found = True
             elif part == "som" or part == "start_of_month":
                 result = result.replace(day=1)
+                valid_keyword_found = True
             elif part == "last_week" or part == "last week":
                 result = result - timedelta(weeks=1)
+                valid_keyword_found = True
             elif part == "next_week" or part == "next week":
                 result = result + timedelta(weeks=1)
+                valid_keyword_found = True
             elif part == "last_year" or part == "last year":
                 try:
                     result = result.replace(year=result.year - 1)
+                    valid_keyword_found = True
                 except ValueError:
                     # Handle Feb 29 in leap years
                     result = result.replace(year=result.year - 1, day=28)
+                    valid_keyword_found = True
             elif part == "next_year" or part == "next year":
                 try:
                     result = result.replace(year=result.year + 1)
+                    valid_keyword_found = True
                 except ValueError:
                     # Handle Feb 29 in leap years
                     result = result.replace(year=result.year + 1, day=28)
+                    valid_keyword_found = True
         
         # Handle compound shortcuts (handle as phrases)
         if "next month eom" in shortcut.lower():
             result = self._add_months(now, 1)
             last_day = monthrange(result.year, result.month)[1]
             result = result.replace(day=last_day)
+            valid_keyword_found = True
         elif "tomorrow eod" in shortcut.lower():
             result = now + timedelta(days=1)
             result = result.replace(hour=23, minute=59, second=59, microsecond=999999)
+            valid_keyword_found = True
         
-        return result
+        # Only return a result if we found a valid keyword
+        return result if valid_keyword_found else None
     
     def _parse_date_input(self, date_input: str) -> Optional[datetime]:
         """Parse date input which could be ISO format or a shortcut"""
-        # Try shortcut first
-        shortcut_result = self._parse_shortcut(date_input)
-        if shortcut_result:
-            return shortcut_result
+        # Try common date formats first (more likely than shortcuts)
+        date_input = date_input.strip()
         
-        # Try common date formats
+        # Try common date formats first
         formats = [
             "%Y-%m-%d %H:%M:%S",
             "%Y-%m-%d %H:%M",
@@ -468,7 +487,10 @@ class TimeEngine(BaseFeature):
             "%d/%m/%Y",
             "%m/%d/%Y",
             "%d-%m-%Y",
-            "%Y/%m/%d"
+            "%Y/%m/%d",
+            "%Y-%m-%dT%H:%M:%S",  # ISO format with T separator
+            "%Y-%m-%dT%H:%M:%SZ",  # ISO format with Z
+            "%Y-%m-%dT%H:%M:%S.%f",  # ISO format with microseconds
         ]
         
         for fmt in formats:
@@ -476,6 +498,12 @@ class TimeEngine(BaseFeature):
                 return datetime.strptime(date_input, fmt)
             except ValueError:
                 continue
+        
+        # If no format matches, try parsing as shortcut
+        # Only return the shortcut result if it's actually a valid shortcut
+        if any(keyword in date_input.lower() for keyword in 
+               ['now', 'yesterday', 'tomorrow', 'eod', 'eom', 'last', 'next', 'sod', 'som']):
+            return self._parse_shortcut(date_input)
         
         return None
     

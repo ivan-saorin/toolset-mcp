@@ -228,6 +228,22 @@ async def task_create(
         due_date: Due date (ISO format)
         estimated_hours: Estimated hours to complete
     """
+    # Handle parameter conversion for tags and estimated_hours
+    # FastMCP might pass them in different formats
+    if tags is not None and not isinstance(tags, list):
+        # If tags is a string, split by comma
+        if isinstance(tags, str):
+            tags = [t.strip() for t in tags.split(',') if t.strip()]
+        else:
+            tags = None
+    
+    if estimated_hours is not None:
+        # Ensure estimated_hours is a float
+        try:
+            estimated_hours = float(estimated_hours)
+        except (ValueError, TypeError):
+            estimated_hours = None
+    
     response = task_manager.task_create(
         title, description, priority, category, 
         tags, due_date, estimated_hours
@@ -295,6 +311,13 @@ async def task_complete(
         completion_notes: Optional completion notes
         actual_hours: Actual hours taken
     """
+    # Handle parameter conversion for actual_hours
+    if actual_hours is not None:
+        try:
+            actual_hours = float(actual_hours)
+        except (ValueError, TypeError):
+            actual_hours = None
+    
     response = task_manager.task_complete(task_id, completion_notes, actual_hours)
     return response.to_dict()
 
