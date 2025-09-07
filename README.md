@@ -249,7 +249,7 @@ await convert_multiple_paths([
 ])
 
 # Validate and show both formats
-await validate_path("M:\\projects\\toolset-mcp\\src")
+await validate_fs_path("M:\\projects\\toolset-mcp\\src")
 # Output: {
 #   "windows_format": "M:\\projects\\toolset-mcp\\src",
 #   "linux_format": "/mcp/projects/toolset-mcp/src",

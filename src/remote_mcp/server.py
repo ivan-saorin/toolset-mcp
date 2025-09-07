@@ -95,7 +95,7 @@ def is_path_allowed(path: Path) -> bool:
     except Exception:
         return False
 
-def validate_path(path_str: str) -> Path:
+def validate_fs_path(path_str: str) -> Path:
     """Validate and return a Path object if allowed"""
     # Convert to Linux format first
     converted_path = convert_to_linux_path(path_str)
@@ -107,7 +107,7 @@ def validate_path(path_str: str) -> Path:
         raise FileNotFoundError(f"File {path} has been marked as deleted")
     return path
 
-def validate_parent_path(path_str: str) -> Path:
+def validate_fs_parent_path(path_str: str) -> Path:
     """Validate parent directory for new files"""
     # Convert to Linux format first
     converted_path = convert_to_linux_path(path_str)
@@ -178,7 +178,7 @@ async def fs_read_file(path: str) -> Dict[str, Any]:
         path: Path to the file to read
     """
     try:
-        file_path = validate_path(path)
+        file_path = validate_fs_path(path)
         if not file_path.is_file():
             return {"error": f"Path {path} is not a file"}
         
@@ -205,7 +205,7 @@ async def fs_read_multiple_files(paths: List[str]) -> Dict[str, Any]:
     
     for path_str in paths:
         try:
-            file_path = validate_path(path_str)
+            file_path = validate_fs_path(path_str)
             if not file_path.is_file():
                 errors[path_str] = f"Path {path_str} is not a file"
                 continue
@@ -237,7 +237,7 @@ async def fs_write_file(path: str, content: str) -> Dict[str, Any]:
         content: Content to write to the file
     """
     try:
-        file_path = validate_parent_path(path)
+        file_path = validate_fs_parent_path(path)
         
         # Create parent directory if it doesn't exist
         file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -274,7 +274,7 @@ async def fs_edit_file(
         dry_run: If True, preview changes without applying them
     """
     try:
-        file_path = validate_path(path)
+        file_path = validate_fs_path(path)
         if not file_path.is_file():
             return {"error": f"Path {path} is not a file"}
         
@@ -316,7 +316,7 @@ async def fs_create_directory(path: str) -> Dict[str, Any]:
         path: Path of the directory to create
     """
     try:
-        dir_path = validate_parent_path(path)
+        dir_path = validate_fs_parent_path(path)
         dir_path.mkdir(parents=True, exist_ok=True)
         
         return {
@@ -337,7 +337,7 @@ async def fs_list_directory(path: str) -> Dict[str, Any]:
         path: Path of the directory to list
     """
     try:
-        dir_path = validate_path(path)
+        dir_path = validate_fs_path(path)
         if not dir_path.is_dir():
             return {"error": f"Path {path} is not a directory"}
         
@@ -369,7 +369,7 @@ async def fs_directory_tree(path: str) -> Dict[str, Any]:
         path: Root path for the directory tree
     """
     try:
-        root_path = validate_path(path)
+        root_path = validate_fs_path(path)
         if not root_path.is_dir():
             return {"error": f"Path {path} is not a directory"}
         
@@ -419,8 +419,8 @@ async def fs_move_file(source: str, destination: str) -> Dict[str, Any]:
         destination: Destination path
     """
     try:
-        src_path = validate_path(source)
-        dst_path = validate_parent_path(destination)
+        src_path = validate_fs_path(source)
+        dst_path = validate_fs_parent_path(destination)
         
         if not src_path.exists():
             return {"error": f"Source path {source} does not exist"}
@@ -460,7 +460,7 @@ async def fs_copy_file(source: str, destination: str) -> Dict[str, Any]:
         destination: Destination path (file or directory)
     """
     try:
-        src_path = validate_path(source)
+        src_path = validate_fs_path(source)
         
         if not src_path.is_file():
             return {"error": f"Source path {source} is not a file"}
@@ -471,7 +471,7 @@ async def fs_copy_file(source: str, destination: str) -> Dict[str, Any]:
         if dst_path.is_dir():
             dst_path = dst_path / src_path.name
         
-        dst_path = validate_parent_path(str(dst_path))
+        dst_path = validate_fs_parent_path(str(dst_path))
         
         # Create parent directory if needed
         dst_path.parent.mkdir(parents=True, exist_ok=True)
@@ -504,12 +504,12 @@ async def fs_copy_directory(
         exclude_patterns: List of patterns to exclude (e.g., ['*.tmp', '__pycache__'])
     """
     try:
-        src_path = validate_path(source)
+        src_path = validate_fs_path(source)
         
         if not src_path.is_dir():
             return {"error": f"Source path {source} is not a directory"}
         
-        dst_path = validate_parent_path(destination)
+        dst_path = validate_fs_parent_path(destination)
         
         # Create ignore function for patterns
         def ignore_patterns(dir_path, names):
@@ -566,7 +566,7 @@ async def fs_delete_file(
         path: Path to the file to delete
     """
     try:
-        file_path = validate_path(path)
+        file_path = validate_fs_path(path)
         
         # ONLY fake deletion - no real deletion allowed
         if not file_path.exists():
@@ -660,7 +660,7 @@ async def fs_search_files(
         exclude_patterns: Patterns to exclude from search
     """
     try:
-        search_path = validate_path(path)
+        search_path = validate_fs_path(path)
         if not search_path.is_dir():
             return {"error": f"Path {path} is not a directory"}
         
@@ -710,7 +710,7 @@ async def fs_get_file_info(path: str) -> Dict[str, Any]:
         path: Path to the file or directory
     """
     try:
-        file_path = validate_path(path)
+        file_path = validate_fs_path(path)
         if not file_path.exists():
             return {"error": f"Path {path} does not exist"}
         
@@ -744,7 +744,8 @@ async def fs_get_file_info(path: str) -> Dict[str, Any]:
         
         return info
     except Exception as e:
-        return {"error": repr(e)}
+        raise e
+        # return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_list_allowed_directories() -> Dict[str, Any]:

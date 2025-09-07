@@ -261,7 +261,7 @@ class PathConverterEngine(BaseFeature):
         except Exception as e:
             return self.handle_error("convert_multiple_paths", e)
     
-    def validate_path(self, path: str) -> ToolResponse:
+    def validate_fs_path(self, path: str) -> ToolResponse:
         """
         Validate a path and show both Windows and Linux conversions
         

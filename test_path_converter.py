@@ -104,7 +104,7 @@ def test_path_converter():
     ]
     
     for path in validate_paths:
-        result = converter.validate_path(path)
+        result = converter.validate_fs_path(path)
         if result.success:
             data = result.data
             print(f"\nValidating: {data['original']}")
