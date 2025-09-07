@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "dockerfilePath": "./deploy/caprover/Dockerfile",
+  "volumes": [
+    {
+      "containerPath": "/data/mcp",
+      "hostPath": "/home/auto/mcp"
+    }
+  ]
+}

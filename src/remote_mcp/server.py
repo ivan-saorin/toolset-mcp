@@ -149,7 +149,7 @@ async def system_info() -> Dict[str, Any]:
             },
             "path_converter": {
                 "version": path_converter.version,
-                "mappings": [f"{path_converter.windows_root.rstrip('\\')} <--> {path_converter.linux_root}"],
+                "mappings": [f"{path_converter.windows_root.rstrip(chr(92))} <--> {path_converter.linux_root}"],
                 "capabilities": ["auto-detect", "multiple_paths", "validation"],
                 "configured_drive": path_converter.windows_drive
             },
