@@ -158,7 +158,7 @@ class PathConverterEngine(BaseFeature):
         
         # Remove trailing backslash unless it's the root
         if len(path) > 3 and path.endswith('\\') and not path.endswith(':\\'):
-            path = path.rstrip('\\')
+            path = path.rstrip(chr(92))
         
         return path
     
