@@ -69,6 +69,21 @@ else:
 DELETED_FILES = set()
 DELETED_FILES_METADATA = {}
 
+def convert_to_linux_path(path_str: str) -> str:
+    """
+    Convert path to Linux format if needed, using the PathConverterEngine.
+    Returns the path in Linux format for internal processing.
+    """
+    # Use the path_converter instance to detect and convert
+    detected_type = path_converter._detect_path_type(path_str)
+    
+    # If it's already Linux format, return as-is
+    if detected_type == "linux":
+        return path_str
+    
+    # Convert Windows to Linux
+    return path_converter._windows_to_linux(path_str)
+
 def is_path_allowed(path: Path) -> bool:
     """Check if a path is within allowed directories"""
     try:
@@ -82,7 +97,9 @@ def is_path_allowed(path: Path) -> bool:
 
 def validate_path(path_str: str) -> Path:
     """Validate and return a Path object if allowed"""
-    path = Path(path_str).expanduser().resolve()
+    # Convert to Linux format first
+    converted_path = convert_to_linux_path(path_str)
+    path = Path(converted_path).expanduser().resolve()
     if not is_path_allowed(path):
         raise ValueError(f"Access denied: path {path} is outside allowed directories")
     # Check if file is marked as deleted
@@ -92,7 +109,9 @@ def validate_path(path_str: str) -> Path:
 
 def validate_parent_path(path_str: str) -> Path:
     """Validate parent directory for new files"""
-    path = Path(path_str).expanduser().resolve()
+    # Convert to Linux format first
+    converted_path = convert_to_linux_path(path_str)
+    path = Path(converted_path).expanduser().resolve()
     parent = path.parent
     if not is_path_allowed(parent):
         raise ValueError(f"Access denied: parent directory {parent} is outside allowed directories")
@@ -135,11 +154,13 @@ async def system_info() -> Dict[str, Any]:
                 "configured_drive": path_converter.windows_drive
             },
             "filesystem": {
-                "version": "1.0.0",
+                "version": "1.1.0",
                 "allowed_directories": [str(d) for d in ALLOWED_DIRECTORIES],
                 "deleted_files_count": len(DELETED_FILES),
                 "deletion_mode": "fake_only",
-                "note": "All deletions are reversible - files are never actually removed"
+                "auto_path_conversion": True,
+                "path_converter_mapping": f"{path_converter.windows_root.rstrip('\\')} <--> {path_converter.linux_root}",
+                "note": "All deletions are reversible - files are never actually removed. Paths are auto-converted between Windows/Linux formats."
             }
         }
     }
@@ -445,7 +466,8 @@ async def fs_copy_file(source: str, destination: str) -> Dict[str, Any]:
             return {"error": f"Source path {source} is not a file"}
         
         # Determine destination path
-        dst_path = Path(destination).expanduser().resolve()
+        converted_dst = convert_to_linux_path(destination)
+        dst_path = Path(converted_dst).expanduser().resolve()
         if dst_path.is_dir():
             dst_path = dst_path / src_path.name
         
@@ -576,7 +598,9 @@ async def fs_restore_deleted(path: str) -> Dict[str, Any]:
         path: Path of the file to restore
     """
     try:
-        file_path = Path(path).expanduser().resolve()
+        # Convert to Linux format first
+        converted_path = convert_to_linux_path(path)
+        file_path = Path(converted_path).expanduser().resolve()
         path_str = str(file_path)
         
         if path_str not in DELETED_FILES:
