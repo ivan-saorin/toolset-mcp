@@ -24,7 +24,7 @@ from .features import (
     TaskManagerEngine,
     TimeEngine,
     PathConverterEngine,
-    # SearchManagerEngine
+    SearchManagerEngine
 )
 
 # Configure logging
@@ -44,7 +44,7 @@ text_analyzer = TextAnalyzerEngine()
 task_manager = TaskManagerEngine()
 time_engine = TimeEngine()
 path_converter = PathConverterEngine()
-# search_manager = SearchManagerEngine()
+search_manager = SearchManagerEngine()
 
 # ============================================================================
 # FILESYSTEM CONFIGURATION
