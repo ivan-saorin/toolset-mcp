@@ -18,7 +18,6 @@ from dataclasses import dataclass, field
 import aiohttp
 
 from ...shared.base import BaseFeature, ToolResponse
-from ...shared.types import SearchProvider
 
 logger = logging.getLogger(__name__)
 
