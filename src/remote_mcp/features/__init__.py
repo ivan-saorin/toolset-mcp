@@ -6,10 +6,12 @@ from .calculator import CalculatorEngine
 from .text_analyzer import TextAnalyzerEngine
 from .task_manager import TaskManagerEngine
 from .time import TimeEngine
+from .path_converter import PathConverterEngine
 
 __all__ = [
     'CalculatorEngine',
     'TextAnalyzerEngine', 
     'TaskManagerEngine',
-    'TimeEngine'
+    'TimeEngine',
+    'PathConverterEngine'
 ]

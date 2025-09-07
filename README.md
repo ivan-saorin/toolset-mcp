@@ -1,6 +1,6 @@
 # Atlas Toolset MCP - Enhanced Utility Toolset Server
 
-A modular FastMCP server providing enhanced utility tools including advanced calculator, text analyzer, task manager, and time utilities with Italian format support.
+A modular FastMCP server providing enhanced utility tools including advanced calculator, text analyzer, task manager, time utilities with Italian format support, and path converter for Windows/Linux compatibility.
 
 ## Architecture
 
@@ -16,7 +16,8 @@ src/remote_mcp/
     ├── calculator/       # Advanced calculator
     ├── text_analyzer/    # Text analysis tools
     ├── task_manager/     # Task management system
-    └── time/             # Time utilities with Italian format
+    ├── time/             # Time utilities with Italian format
+    └── path_converter/   # Windows/Linux path conversion
 ```
 
 ## Features
@@ -118,6 +119,25 @@ Combine shortcuts for complex dates:
 - `time_add` - Add/subtract time from dates
 - `time_format` - Convert between date formats
 
+### 🔄 Path Converter (NEW)
+
+Convert between Windows and Linux path formats with configurable drive mapping:
+
+- **Auto-detection**: Automatically detects path format and converts to the opposite
+- **Batch conversion**: Convert multiple paths in one operation
+- **Path validation**: Validate paths and see both Windows and Linux formats
+- **VS Code integration**: Perfect for copying paths from VS Code on Windows
+- **Configurable drive**: Use `MCP_WINDOWS_DRIVE` environment variable (default: M)
+
+**Path Mapping:**
+- Windows: `M:\projects\myproject` (or configured drive)
+- Linux: `/mcp/projects/myproject`
+
+**Tools:**
+- `convert_path` - Convert a single path
+- `convert_multiple_paths` - Convert multiple paths at once
+- `validate_path` - Validate and show both formats
+
 ## Usage Examples
 
 ### Calculator Examples
@@ -199,6 +219,45 @@ await time_add("now", 45, unit="days", format="italian")
 # Format conversion
 await time_format("2025-09-05", input_format="iso", output_format="full_italian")
 # Output: "venerdì 5 settembre 2025, 00:00:00"
+```
+
+### Path Converter Examples
+```python
+# Convert Windows path to Linux
+await convert_path("M:\\projects\\toolset-mcp\\README.md")
+# Output: {
+#   "original": "M:\\projects\\toolset-mcp\\README.md",
+#   "converted": "/mcp/projects/toolset-mcp/README.md",
+#   "detected_type": "windows",
+#   "conversion": "windows_to_linux"
+# }
+
+# Convert Linux path to Windows
+await convert_path("/mcp/projects/atlas-meta/akasha")
+# Output: {
+#   "original": "/mcp/projects/atlas-meta/akasha",
+#   "converted": "M:\\projects\\atlas-meta\\akasha",
+#   "detected_type": "linux",
+#   "conversion": "linux_to_windows"
+# }
+
+# Convert multiple paths
+await convert_multiple_paths([
+    "M:\\projects\\project1",
+    "/mcp/data/file.txt",
+    "M:\\workspace\\test"
+])
+
+# Validate and show both formats
+await validate_path("M:\\projects\\toolset-mcp\\src")
+# Output: {
+#   "windows_format": "M:\\projects\\toolset-mcp\\src",
+#   "linux_format": "/mcp/projects/toolset-mcp/src",
+#   "ready_to_copy": {
+#     "windows": "M:\\projects\\toolset-mcp\\src",
+#     "linux": "/mcp/projects/toolset-mcp/src"
+#   }
+# }
 ```
 
 ## Running the Server

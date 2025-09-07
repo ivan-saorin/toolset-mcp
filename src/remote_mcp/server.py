@@ -22,7 +22,8 @@ from .features import (
     CalculatorEngine,
     TextAnalyzerEngine,
     TaskManagerEngine,
-    TimeEngine
+    TimeEngine,
+    PathConverterEngine
 )
 
 # Configure logging
@@ -34,13 +35,14 @@ logger = logging.getLogger("atlas-toolset")
 
 # Initialize MCP server
 mcp = FastMCP("Atlas Toolset MCP")
-mcp.description = "Enhanced utility toolset with calculator, text analysis, task management, time, and filesystem features"
+mcp.description = "Enhanced utility toolset with calculator, text analysis, task management, time, path converter, and filesystem features"
 
 # Initialize feature engines
 calculator = CalculatorEngine()
 text_analyzer = TextAnalyzerEngine()
 task_manager = TaskManagerEngine()
 time_engine = TimeEngine()
+path_converter = PathConverterEngine()
 
 # ============================================================================
 # FILESYSTEM CONFIGURATION
@@ -125,6 +127,12 @@ async def system_info() -> Dict[str, Any]:
                 "version": time_engine.version,
                 "formats": ["italian", "iso", "us"],
                 "shortcuts": ["now", "yesterday", "tomorrow", "EoD", "EoM", "last_month", "next_month"]
+            },
+            "path_converter": {
+                "version": path_converter.version,
+                "mappings": [f"{path_converter.windows_root.rstrip('\\')} <--> {path_converter.linux_root}"],
+                "capabilities": ["auto-detect", "multiple_paths", "validation"],
+                "configured_drive": path_converter.windows_drive
             },
             "filesystem": {
                 "version": "1.0.0",
@@ -726,6 +734,53 @@ async def fs_list_allowed_directories() -> Dict[str, Any]:
     }
 
 # ============================================================================
+# PATH CONVERTER TOOLS
+# ============================================================================
+
+@mcp.tool()
+async def convert_path(
+    path: str,
+    force_direction: str = None
+) -> Dict[str, Any]:
+    f"""
+    Convert between Windows and Linux path formats ({path_converter.windows_root.rstrip('\\')} <--> {path_converter.linux_root})
+    
+    Args:
+        path: Path to convert
+        force_direction: Force conversion direction: 'to_linux' or 'to_windows' (auto-detect if not specified)
+    """
+    response = path_converter.convert_path(path, force_direction)
+    return response.to_dict()
+
+@mcp.tool()
+async def convert_multiple_paths(
+    paths: List[str],
+    force_direction: str = None
+) -> Dict[str, Any]:
+    """
+    Convert multiple paths at once
+    
+    Args:
+        paths: List of paths to convert
+        force_direction: Force conversion direction for all paths
+    """
+    response = path_converter.convert_multiple_paths(paths, force_direction)
+    return response.to_dict()
+
+@mcp.tool()
+async def validate_path(
+    path: str
+) -> Dict[str, Any]:
+    """
+    Validate a path and show both Windows and Linux formats
+    
+    Args:
+        path: Path to validate and show conversions for
+    """
+    response = path_converter.validate_path(path)
+    return response.to_dict()
+
+# ============================================================================
 # CALCULATOR TOOLS
 # ============================================================================
 
@@ -1084,7 +1139,7 @@ async def health_check(request):
             "status": "healthy",
             "service": "Atlas Toolset MCP",
             "version": "3.1.0",
-            "features": ["calculator", "text_analyzer", "task_manager", "time", "filesystem"],
+            "features": ["calculator", "text_analyzer", "task_manager", "time", "path_converter", "filesystem"],
             "timestamp": datetime.now().isoformat()
         },
         status_code=200
@@ -1130,7 +1185,7 @@ if __name__ == "__main__":
     logger.info(f"Starting Atlas Toolset MCP Server v3.1.0")
     logger.info(f"Server will be available at {host}:{port}/mcp")
     logger.info(f"Health check at {host}:{port}/health")
-    logger.info(f"Features loaded: calculator, text_analyzer, task_manager, time, filesystem")
+    logger.info(f"Features loaded: calculator, text_analyzer, task_manager, time, path_converter, filesystem")
     logger.info(f"Filesystem allowed directories: {[str(d) for d in ALLOWED_DIRECTORIES]}")
     logger.info(f"Italian date format enabled with shortcuts")
     
