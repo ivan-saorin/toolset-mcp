@@ -27,9 +27,10 @@ We implemented a Unified Search Manager that:
 ```
 SearchManagerEngine
 ├── Web Providers
-│   ├── BraveSearchProvider
-│   └── TavilySearchProvider
-└── Paper Providers
+│   ├── BraveSearchProvider (refer to: `M:\ref_projects\brave-search-mcp-server`)
+│   └── TavilySearchProvider (refere to: `M:\ref_projects\tavily-mcp`)
+│   └── SearxngSearchProvider (refer to: `M:\ref_projects\SearXNG-MCP`)
+└── Paper Providers (refer to: `M:\ref_projects\paper-search-mcp`)
     ├── ArxivSearchProvider
     ├── PubMedSearchProvider
     └── SemanticScholarProvider

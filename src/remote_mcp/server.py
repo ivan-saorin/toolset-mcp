@@ -24,7 +24,7 @@ from .features import (
     TaskManagerEngine,
     TimeEngine,
     PathConverterEngine,
-    SearchManagerEngine
+    # SearchManagerEngine
 )
 
 # Configure logging
