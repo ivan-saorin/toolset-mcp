@@ -15,5 +15,5 @@ __all__ = [
     'TaskManagerEngine',
     'TimeEngine',
     'PathConverterEngine',
-    # 'SearchManagerEngine'
+    'SearchManagerEngine'
 ]
