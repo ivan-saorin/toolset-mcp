@@ -28,14 +28,14 @@ extracted = await tavily_extract(
     extract_depth="advanced"
 )
 
-# Crawl a website (NEW)
+# Crawl a website (IF ALLOWED BY API_KAY)
 crawl_results = await tavily_crawl(
     url="https://docs.example.com",
     max_depth=2,
     categories=["Documentation"]
 )
 
-# Map website structure (NEW)
+# Map website structure (IF ALLOWED BY API_KAY)
 site_map = await tavily_map(
     url="https://example.com",
     limit=100

@@ -1256,76 +1256,76 @@ async def tavily_extract(
     response = await search_manager.tavily_extract(urls, extract_depth, include_images, format, include_favicon)
     return response.to_dict()
 
-@mcp.tool()
-async def tavily_crawl(
-    url: str,
-    max_depth: int = 1,
-    max_breadth: int = 20,
-    limit: int = 50,
-    instructions: str = None,
-    select_paths: List[str] = None,
-    select_domains: List[str] = None,
-    allow_external: bool = False,
-    categories: List[str] = None,
-    extract_depth: str = "basic",
-    format: str = "markdown",
-    include_favicon: bool = False
-) -> Dict[str, Any]:
-    """
-    Crawl a website systematically starting from a base URL, following internal links.
+# @mcp.tool()
+# async def tavily_crawl(
+#     url: str,
+#     max_depth: int = 1,
+#     max_breadth: int = 20,
+#     limit: int = 50,
+#     instructions: str = None,
+#     select_paths: List[str] = None,
+#     select_domains: List[str] = None,
+#     allow_external: bool = False,
+#     categories: List[str] = None,
+#     extract_depth: str = "basic",
+#     format: str = "markdown",
+#     include_favicon: bool = False
+# ) -> Dict[str, Any]:
+#     """
+#     Crawl a website systematically starting from a base URL, following internal links.
     
-    Args:
-        url: The root URL to begin the crawl
-        max_depth: Max depth of crawl (default: 1)
-        max_breadth: Max links per level (default: 20)
-        limit: Total links to process (default: 50)
-        instructions: Natural language instructions for the crawler
-        select_paths: Regex patterns for URL paths (e.g., ['/docs/.*', '/api/v1.*'])
-        select_domains: Regex patterns for domains
-        allow_external: Allow external domain links (default: false)
-        categories: Filter by categories: ['Careers', 'Blog', 'Documentation', 'About', 'Pricing', 'Community', 'Developers', 'Contact', 'Media']
-        extract_depth: 'basic' or 'advanced' extraction
-        format: 'markdown' or 'text' output
-        include_favicon: Include favicon URLs
-    """
-    response = await search_manager.tavily_crawl(
-        url, max_depth, max_breadth, limit, instructions,
-        select_paths, select_domains, allow_external, categories,
-        extract_depth, format, include_favicon
-    )
-    return response.to_dict()
+#     Args:
+#         url: The root URL to begin the crawl
+#         max_depth: Max depth of crawl (default: 1)
+#         max_breadth: Max links per level (default: 20)
+#         limit: Total links to process (default: 50)
+#         instructions: Natural language instructions for the crawler
+#         select_paths: Regex patterns for URL paths (e.g., ['/docs/.*', '/api/v1.*'])
+#         select_domains: Regex patterns for domains
+#         allow_external: Allow external domain links (default: false)
+#         categories: Filter by categories: ['Careers', 'Blog', 'Documentation', 'About', 'Pricing', 'Community', 'Developers', 'Contact', 'Media']
+#         extract_depth: 'basic' or 'advanced' extraction
+#         format: 'markdown' or 'text' output
+#         include_favicon: Include favicon URLs
+#     """
+#     response = await search_manager.tavily_crawl(
+#         url, max_depth, max_breadth, limit, instructions,
+#         select_paths, select_domains, allow_external, categories,
+#         extract_depth, format, include_favicon
+#     )
+#     return response.to_dict()
 
-@mcp.tool()
-async def tavily_map(
-    url: str,
-    max_depth: int = 1,
-    max_breadth: int = 20,
-    limit: int = 50,
-    instructions: str = None,
-    select_paths: List[str] = None,
-    select_domains: List[str] = None,
-    allow_external: bool = False,
-    categories: List[str] = None
-) -> Dict[str, Any]:
-    """
-    Create a structured map of website URLs for site analysis and navigation understanding.
+# @mcp.tool()
+# async def tavily_map(
+#     url: str,
+#     max_depth: int = 1,
+#     max_breadth: int = 20,
+#     limit: int = 50,
+#     instructions: str = None,
+#     select_paths: List[str] = None,
+#     select_domains: List[str] = None,
+#     allow_external: bool = False,
+#     categories: List[str] = None
+# ) -> Dict[str, Any]:
+#     """
+#     Create a structured map of website URLs for site analysis and navigation understanding.
     
-    Args:
-        url: The root URL to begin mapping
-        max_depth: Max depth of mapping (default: 1)
-        max_breadth: Max links per level (default: 20)
-        limit: Total links to process (default: 50)
-        instructions: Natural language instructions
-        select_paths: Regex patterns for URL paths
-        select_domains: Regex patterns for domains
-        allow_external: Allow external domain links (default: false)
-        categories: Filter by categories
-    """
-    response = await search_manager.tavily_map(
-        url, max_depth, max_breadth, limit, instructions,
-        select_paths, select_domains, allow_external, categories
-    )
-    return response.to_dict()
+#     Args:
+#         url: The root URL to begin mapping
+#         max_depth: Max depth of mapping (default: 1)
+#         max_breadth: Max links per level (default: 20)
+#         limit: Total links to process (default: 50)
+#         instructions: Natural language instructions
+#         select_paths: Regex patterns for URL paths
+#         select_domains: Regex patterns for domains
+#         allow_external: Allow external domain links (default: false)
+#         categories: Filter by categories
+#     """
+#     response = await search_manager.tavily_map(
+#         url, max_depth, max_breadth, limit, instructions,
+#         select_paths, select_domains, allow_external, categories
+#     )
+#     return response.to_dict()
 
 # ============================================================================
 # ASGI APPLICATION WITH HEALTH CHECK
