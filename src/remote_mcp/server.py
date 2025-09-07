@@ -155,6 +155,12 @@ async def system_info() -> Dict[str, Any]:
                 "capabilities": ["auto-detect", "multiple_paths", "validation"],
                 "configured_drive": path_converter.windows_drive
             },
+            "search_manager": {
+                "version": search_manager.version,
+                "web_providers": list(search_manager.web_providers.keys()),
+                "paper_providers": list(search_manager.paper_providers.keys()),
+                "capabilities": ["parallel_search", "deduplication", "unified_format", "pdf_download"]
+            },
             "filesystem": {
                 "version": "1.1.0",
                 "allowed_directories": [str(d) for d in ALLOWED_DIRECTORIES],
@@ -1156,6 +1162,79 @@ async def time_format(
     return response.to_dict()
 
 # ============================================================================
+# SEARCH MANAGER TOOLS
+# ============================================================================
+
+@mcp.tool()
+async def web_search(
+    query: str,
+    providers: List[str] = None,
+    max_results: int = 10
+) -> Dict[str, Any]:
+    """
+    Search the web using multiple providers (Brave, Tavily) in parallel.
+    Returns consolidated results from all specified providers.
+    
+    Args:
+        query: Search query
+        providers: Optional list of providers to use (brave, tavily). Uses all available if not specified.
+        max_results: Maximum results to return (default: 10)
+    """
+    response = await search_manager.web_search(query, providers, max_results)
+    return response.to_dict()
+
+@mcp.tool()
+async def paper_search(
+    query: str,
+    providers: List[str] = None,
+    max_results: int = 10
+) -> Dict[str, Any]:
+    """
+    Search academic papers across multiple databases (ArXiv, PubMed, Semantic Scholar) in parallel.
+    Returns consolidated results with paper metadata.
+    
+    Args:
+        query: Search query
+        providers: Optional list of providers (arxiv, pubmed, semantic). Uses all available if not specified.
+        max_results: Maximum results to return (default: 10)
+    """
+    response = await search_manager.paper_search(query, providers, max_results)
+    return response.to_dict()
+
+@mcp.tool()
+async def paper_download(
+    paper_id: str,
+    provider: str,
+    save_path: str = "./downloads"
+) -> Dict[str, Any]:
+    """
+    Download a paper PDF from a specific provider.
+    
+    Args:
+        paper_id: Paper identifier (format varies by provider)
+        provider: Which provider to use (arxiv, semantic)
+        save_path: Where to save the PDF (default: ./downloads)
+    """
+    response = await search_manager.paper_download(paper_id, provider, save_path)
+    return response.to_dict()
+
+@mcp.tool()
+async def paper_read(
+    paper_id: str,
+    provider: str
+) -> Dict[str, Any]:
+    """
+    Download and extract text content from a paper.
+    Note: PDF text extraction is not fully implemented yet.
+    
+    Args:
+        paper_id: Paper identifier
+        provider: Which provider to use (arxiv, semantic)
+    """
+    response = await search_manager.paper_read(paper_id, provider)
+    return response.to_dict()
+
+# ============================================================================
 # ASGI APPLICATION WITH HEALTH CHECK
 # ============================================================================
 
@@ -1166,7 +1245,7 @@ async def health_check(request):
             "status": "healthy",
             "service": "Atlas Toolset MCP",
             "version": "3.1.0",
-            "features": ["calculator", "text_analyzer", "task_manager", "time", "path_converter", "filesystem"],
+            "features": ["calculator", "text_analyzer", "task_manager", "time", "path_converter", "filesystem", "search_manager"],
             "timestamp": datetime.now().isoformat()
         },
         status_code=200
@@ -1212,7 +1291,7 @@ if __name__ == "__main__":
     logger.info(f"Starting Atlas Toolset MCP Server v3.1.0")
     logger.info(f"Server will be available at {host}:{port}/mcp")
     logger.info(f"Health check at {host}:{port}/health")
-    logger.info(f"Features loaded: calculator, text_analyzer, task_manager, time, path_converter, filesystem")
+    logger.info(f"Features loaded: calculator, text_analyzer, task_manager, time, path_converter, filesystem, search_manager")
     logger.info(f"Filesystem allowed directories: {[str(d) for d in ALLOWED_DIRECTORIES]}")
     logger.info(f"Italian date format enabled with shortcuts")
     

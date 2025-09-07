@@ -37,6 +37,7 @@ download = await paper_download(
 ### Web Search Providers
 - **Brave**: General web search with privacy focus
 - **Tavily**: AI-enhanced search with better context understanding
+- **SearXNG**: Privacy-focused meta-search engine (self-hosted or public instances)
 
 ### Academic Paper Providers
 - **ArXiv**: Preprints in physics, mathematics, computer science
@@ -51,6 +52,7 @@ download = await paper_download(
 # Web search providers
 BRAVE_API_KEY=your_brave_api_key
 TAVILY_API_KEY=your_tavily_api_key
+SEARXNG_SERVER_URL=https://your-searxng-instance.com  # Your SearXNG instance URL
 
 # Academic providers (optional - increases rate limits)
 PUBMED_API_KEY=your_pubmed_api_key  # Optional
@@ -60,8 +62,18 @@ SEMANTIC_SCHOLAR_API_KEY=your_ss_api_key  # Optional
 ### Getting API Keys
 - **Brave**: https://brave.com/search/api/
 - **Tavily**: https://app.tavily.com/
+- **SearXNG**: Self-host from https://github.com/searxng/searxng or use a public instance
 - **PubMed**: https://www.ncbi.nlm.nih.gov/account/
 - **Semantic Scholar**: https://www.semanticscholar.org/product/api
+
+#### SearXNG Configuration
+SearXNG requires a running instance with JSON format enabled:
+```yaml
+search:
+  formats:
+    - html
+    - json
+```
 
 ## Architecture
 

@@ -118,6 +118,7 @@ async def web_search(self, query: str, providers: Union[List[str], None] = None,
 # Web Providers
 BRAVE_API_KEY: Required for Brave search
 TAVILY_API_KEY: Required for Tavily AI-enhanced search
+SEARXNG_SERVER_URL: Required for SearXNG meta-search (self-hosted or public instance)
 
 # Paper Providers (Optional - increase rate limits)
 PUBMED_API_KEY: Optional for PubMed
@@ -132,6 +133,7 @@ The system is designed for easy deployment on Caprover with environment variable
 environment:
   BRAVE_API_KEY: "$$cap_brave_api_key"
   TAVILY_API_KEY: "$$cap_tavily_api_key"
+  SEARXNG_SERVER_URL: "$$cap_searxng_server_url"
   PUBMED_API_KEY: "$$cap_pubmed_api_key"
   SEMANTIC_SCHOLAR_API_KEY: "$$cap_semantic_api_key"
 ```

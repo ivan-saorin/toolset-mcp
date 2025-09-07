@@ -16,6 +16,16 @@ services:
       PYTHONUNBUFFERED: 1
       PYTHONDONTWRITEBYTECODE: 1
       PYTHONPATH: /app/src
+      
+      # Search Manager API Keys (use CapRover environment variables)
+      # Web Search Providers
+      BRAVE_API_KEY: "$$cap_brave_api_key"
+      TAVILY_API_KEY: "$$cap_tavily_api_key"
+      SEARXNG_SERVER_URL: "$$cap_searxng_server_url"
+      
+      # Academic Search Providers (optional)
+      PUBMED_API_KEY: "$$cap_pubmed_api_key"
+      SEMANTIC_SCHOLAR_API_KEY: "$$cap_semantic_api_key"
     
     volumes:
       # Map host directories to container paths

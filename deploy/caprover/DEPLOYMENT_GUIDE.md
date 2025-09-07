@@ -30,6 +30,16 @@ HOST=0.0.0.0
 # Filesystem configuration - IMPORTANT!
 # Specify allowed directories as comma-separated list
 ALLOWED_DIRECTORIES=/data/shared,/data/user,/data/projects,/data/workspace
+
+# Search Manager API Keys (optional but recommended)
+# Web Search Providers
+BRAVE_API_KEY=your_brave_api_key_here
+TAVILY_API_KEY=your_tavily_api_key_here
+SEARXNG_SERVER_URL=https://your-searxng-instance.com
+
+# Academic Search Providers (optional - increases rate limits)
+PUBMED_API_KEY=your_pubmed_api_key_here
+SEMANTIC_SCHOLAR_API_KEY=your_semantic_scholar_api_key_here
 ```
 
 ### 3. Configure Persistent Volumes
@@ -76,6 +86,11 @@ git push caprover main
 | `ALLOWED_DIRECTORIES` | Comma-separated list of allowed directories | `/data/shared,/data/user,/data/projects,/data/workspace` |
 | `PORT` | Server port | `80` |
 | `HOST` | Server host | `0.0.0.0` |
+| `BRAVE_API_KEY` | Brave Search API key (optional) | None |
+| `TAVILY_API_KEY` | Tavily AI Search API key (optional) | None |
+| `SEARXNG_SERVER_URL` | SearXNG instance URL (optional) | None |
+| `PUBMED_API_KEY` | PubMed API key (optional, increases rate limits) | None |
+| `SEMANTIC_SCHOLAR_API_KEY` | Semantic Scholar API key (optional, increases rate limits) | None |
 
 ### Volume Mapping Strategies
 
