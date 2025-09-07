@@ -159,7 +159,7 @@ async def system_info() -> Dict[str, Any]:
                 "deleted_files_count": len(DELETED_FILES),
                 "deletion_mode": "fake_only",
                 "auto_path_conversion": True,
-                "path_converter_mapping": f"{path_converter.windows_root.rstrip('\\')} <--> {path_converter.linux_root}",
+                "path_converter_mapping": f"{path_converter.windows_root.rstrip(chr(92))} <--> {path_converter.linux_root}",
                 "note": "All deletions are reversible - files are never actually removed. Paths are auto-converted between Windows/Linux formats."
             }
         }
@@ -767,7 +767,7 @@ async def convert_path(
     force_direction: str = None
 ) -> Dict[str, Any]:
     f"""
-    Convert between Windows and Linux path formats ({path_converter.windows_root.rstrip('\\')} <--> {path_converter.linux_root})
+    Convert between Windows and Linux path formats ({path_converter.windows_root.rstrip(chr(92))} <--> {path_converter.linux_root})
     
     Args:
         path: Path to convert
