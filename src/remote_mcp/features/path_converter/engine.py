@@ -27,7 +27,7 @@ class PathConverterEngine(BaseFeature):
         return [
             {
                 "name": "convert_path",
-                "description": f"Convert between Windows and Linux path formats ({self.windows_root.rstrip('\\')} <--> {self.linux_root})",
+                "description": f"Convert between Windows and Linux path formats ({self.windows_root.rstrip(chr(92))} <--> {self.linux_root})",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
