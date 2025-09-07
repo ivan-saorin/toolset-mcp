@@ -86,6 +86,97 @@ class BaseSearchProvider(ABC):
 # WEB SEARCH PROVIDERS
 # ============================================================================
 
+class SearXNGSearchProvider(BaseSearchProvider):
+    """SearXNG meta-search engine provider"""
+    
+    def __init__(self):
+        super().__init__("searxng", timeout=10.0)  # Longer timeout for meta-search
+        self.server_url = os.getenv('SEARXNG_SERVER_URL')
+        if self.server_url:
+            self.server_url = self.server_url.rstrip('/')
+            self.search_url = f"{self.server_url}/search"
+        
+    def get_env_requirements(self) -> Dict[str, Dict[str, Any]]:
+        return {
+            'SEARXNG_SERVER_URL': {
+                'required': True,
+                'description': 'Base URL of your SearXNG instance',
+                'obtain_from': 'Self-hosted SearXNG instance or public instance',
+                'example': 'https://searx.example.com'
+            }
+        }
+    
+    async def search(self, query: str, max_results: int = 10) -> List[SearchResult]:
+        """Search using SearXNG meta-search engine"""
+        if not self.server_url:
+            raise ValueError("SEARXNG_SERVER_URL not configured")
+        
+        params = {
+            'q': query,
+            'format': 'json',
+            'pageno': '1'  # SearXNG uses string page numbers
+        }
+        
+        results = []
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get(
+                    self.search_url,
+                    params=params,
+                    timeout=aiohttp.ClientTimeout(total=self.timeout)
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        # SearXNG returns results in a 'results' array
+                        searxng_results = data.get('results', [])
+                        
+                        for idx, item in enumerate(searxng_results[:max_results]):
+                            # Extract domain from URL
+                            url = item.get('url', '')
+                            domain = ''
+                            if url.startswith('http'):
+                                parts = url.split('/')
+                                if len(parts) >= 3:
+                                    domain = parts[2]
+                            
+                            # Build metadata including search engines
+                            metadata = {
+                                'engines': item.get('engines', [])
+                            }
+                            
+                            # Add any additional fields SearXNG provides
+                            for key in ['publishedDate', 'engine', 'score', 'category']:
+                                if key in item:
+                                    metadata[key] = item[key]
+                            
+                            results.append(SearchResult(
+                                title=item.get('title', ''),
+                                url=url,
+                                snippet=item.get('content', ''),
+                                source=self.name,
+                                score=1.0 - (idx * 0.05),  # Simple ranking
+                                domain=domain,
+                                published_time=item.get('publishedDate', ''),
+                                metadata=metadata
+                            ))
+                    else:
+                        self.logger.error(f"SearXNG API error: {response.status}")
+                        # Try to get error message
+                        try:
+                            error_data = await response.json()
+                            self.logger.error(f"Error details: {error_data}")
+                        except:
+                            pass
+                        
+            except asyncio.TimeoutError:
+                self.logger.error(f"SearXNG search timeout for query: {query}")
+            except Exception as e:
+                self.logger.error(f"SearXNG search error: {str(e)}")
+                
+        return results
+
 class BraveSearchProvider(BaseSearchProvider):
     """Brave Search API provider"""
     
@@ -595,6 +686,14 @@ class SearchManagerEngine(BaseFeature):
         except Exception as e:
             self.logger.warning(f"Tavily provider not available: {e}")
             
+        try:
+            searxng = SearXNGSearchProvider()
+            searxng.validate_env()
+            self.web_providers['searxng'] = searxng
+            self.logger.info("Initialized SearXNG search provider")
+        except Exception as e:
+            self.logger.warning(f"SearXNG provider not available: {e}")
+            
         # Paper providers
         try:
             arxiv = ArxivSearchProvider()
@@ -628,7 +727,7 @@ class SearchManagerEngine(BaseFeature):
                 "description": "Search the web using multiple providers",
                 "parameters": {
                     "query": "Search query",
-                    "providers": "Optional list of providers to use (brave, tavily)",
+                    "providers": "Optional list of providers to use (brave, tavily, searxng)",
                     "max_results": "Maximum results to return (default: 10)"
                 }
             },

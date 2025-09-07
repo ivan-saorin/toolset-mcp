@@ -1,6 +1,6 @@
 # Atlas Toolset MCP - Enhanced Utility Toolset Server
 
-A modular FastMCP server providing enhanced utility tools including advanced calculator, text analyzer, task manager, time utilities with Italian format support, and path converter for Windows/Linux compatibility.
+A modular FastMCP server providing enhanced utility tools including advanced calculator, text analyzer, task manager, time utilities with Italian format support, path converter for Windows/Linux compatibility, and unified search capabilities for web and academic papers.
 
 ## Architecture
 
@@ -17,7 +17,8 @@ src/remote_mcp/
     ├── text_analyzer/    # Text analysis tools
     ├── task_manager/     # Task management system
     ├── time/             # Time utilities with Italian format
-    └── path_converter/   # Windows/Linux path conversion
+    ├── path_converter/   # Windows/Linux path conversion
+    └── search_manager/   # Unified web and paper search
 ```
 
 ## Features
@@ -137,6 +138,27 @@ Convert between Windows and Linux path formats with configurable drive mapping:
 - `convert_path` - Convert a single path
 - `convert_multiple_paths` - Convert multiple paths at once
 - `validate_path` - Validate and show both formats
+
+### 🔍 Search Manager (NEW)
+
+Unified search interface for web and academic papers with parallel execution:
+
+- **Web Search**: Search across multiple providers (Brave, Tavily) in parallel
+- **Paper Search**: Search academic databases (ArXiv, PubMed, Semantic Scholar)
+- **Parallel Execution**: All providers run concurrently for optimal performance
+- **Result Consolidation**: Automatic deduplication and ranking
+- **PDF Download**: Download papers directly from supported providers
+- **Graceful Degradation**: Continues with available providers if some fail
+
+**Supported Providers:**
+- **Web**: Brave (privacy-focused), Tavily (AI-enhanced), SearXNG (meta-search)
+- **Academic**: ArXiv (preprints), PubMed (biomedical), Semantic Scholar (AI-powered)
+
+**Tools:**
+- `web_search` - Search the web across multiple providers
+- `paper_search` - Search academic papers
+- `paper_download` - Download paper PDFs
+- `paper_read` - Extract text from papers (limited)
 
 ## Usage Examples
 
@@ -258,6 +280,44 @@ await validate_path("M:\\projects\\toolset-mcp\\src")
 #     "linux": "/mcp/projects/toolset-mcp/src"
 #   }
 # }
+```
+
+### Search Manager Examples
+```python
+# Search the web across all available providers
+await web_search("python asyncio best practices")
+# Returns results from Brave and Tavily in parallel
+
+# Search specific providers
+await web_search(
+    "latest AI developments 2025",
+    providers=["tavily"],  # AI-enhanced search
+    max_results=20
+)
+
+# Search academic papers
+await paper_search("transformer neural networks attention")
+# Searches ArXiv, PubMed, and Semantic Scholar
+
+# Search specific academic databases
+await paper_search(
+    "COVID-19 vaccine efficacy",
+    providers=["pubmed", "semantic"],
+    max_results=15
+)
+
+# Download a paper
+await paper_download(
+    paper_id="2106.12345",  # ArXiv ID
+    provider="arxiv",
+    save_path="./research/papers"
+)
+
+# Read paper content (limited PDF extraction)
+await paper_read(
+    paper_id="2106.12345",
+    provider="arxiv"
+)
 ```
 
 ## Running the Server
