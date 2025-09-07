@@ -175,6 +175,156 @@ class SearXNGSearchProvider(BaseSearchProvider):
                 self.logger.error(f"SearXNG search error: {str(e)}")
                 
         return results
+    
+    async def extract(self, urls: List[str], extract_depth: str = "basic", 
+                     include_images: bool = False, format: str = "markdown",
+                     include_favicon: bool = False) -> Dict[str, Any]:
+        """Extract content from URLs"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'urls': urls,
+            'extract_depth': extract_depth,
+            'include_images': include_images,
+            'format': format,
+            'include_favicon': include_favicon
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.extract_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=15.0)  # Longer timeout for extraction
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Extract API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily extract timeout")
+                return {"error": "Extract timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily extract error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def crawl(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                   limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                   select_domains: List[str] = None, allow_external: bool = False,
+                   categories: List[str] = None, extract_depth: str = "basic",
+                   format: str = "markdown", include_favicon: bool = False) -> Dict[str, Any]:
+        """Crawl a website starting from base URL"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'extract_depth': extract_depth,
+            'format': format,
+            'include_favicon': include_favicon,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.crawl_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=30.0)  # Longer timeout for crawling
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Crawl API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily crawl timeout")
+                return {"error": "Crawl timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily crawl error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def map(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                 limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                 select_domains: List[str] = None, allow_external: bool = False,
+                 categories: List[str] = None) -> Dict[str, Any]:
+        """Create a map of website structure"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.map_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=20.0)  # Moderate timeout for mapping
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Map API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily map timeout")
+                return {"error": "Map timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily map error: {str(e)}")
+                return {"error": str(e)}
 
 class BraveSearchProvider(BaseSearchProvider):
     """Brave Search API provider"""
@@ -245,6 +395,156 @@ class BraveSearchProvider(BaseSearchProvider):
                 self.logger.error(f"Brave search error: {str(e)}")
                 
         return results
+    
+    async def extract(self, urls: List[str], extract_depth: str = "basic", 
+                     include_images: bool = False, format: str = "markdown",
+                     include_favicon: bool = False) -> Dict[str, Any]:
+        """Extract content from URLs"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'urls': urls,
+            'extract_depth': extract_depth,
+            'include_images': include_images,
+            'format': format,
+            'include_favicon': include_favicon
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.extract_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=15.0)  # Longer timeout for extraction
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Extract API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily extract timeout")
+                return {"error": "Extract timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily extract error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def crawl(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                   limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                   select_domains: List[str] = None, allow_external: bool = False,
+                   categories: List[str] = None, extract_depth: str = "basic",
+                   format: str = "markdown", include_favicon: bool = False) -> Dict[str, Any]:
+        """Crawl a website starting from base URL"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'extract_depth': extract_depth,
+            'format': format,
+            'include_favicon': include_favicon,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.crawl_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=30.0)  # Longer timeout for crawling
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Crawl API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily crawl timeout")
+                return {"error": "Crawl timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily crawl error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def map(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                 limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                 select_domains: List[str] = None, allow_external: bool = False,
+                 categories: List[str] = None) -> Dict[str, Any]:
+        """Create a map of website structure"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.map_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=20.0)  # Moderate timeout for mapping
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Map API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily map timeout")
+                return {"error": "Map timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily map error: {str(e)}")
+                return {"error": str(e)}
 
 
 class TavilySearchProvider(BaseSearchProvider):
@@ -254,6 +554,9 @@ class TavilySearchProvider(BaseSearchProvider):
         super().__init__("tavily", timeout=8.0)  # Slightly longer for AI processing
         self.api_key = os.getenv('TAVILY_API_KEY')
         self.base_url = "https://api.tavily.com/search"
+        self.extract_url = "https://api.tavily.com/extract"
+        self.crawl_url = "https://api.tavily.com/crawl"
+        self.map_url = "https://api.tavily.com/map"
         
     def get_env_requirements(self) -> Dict[str, Dict[str, Any]]:
         return {
@@ -321,6 +624,156 @@ class TavilySearchProvider(BaseSearchProvider):
                 self.logger.error(f"Tavily search error: {str(e)}")
                 
         return results
+    
+    async def extract(self, urls: List[str], extract_depth: str = "basic", 
+                     include_images: bool = False, format: str = "markdown",
+                     include_favicon: bool = False) -> Dict[str, Any]:
+        """Extract content from URLs"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'urls': urls,
+            'extract_depth': extract_depth,
+            'include_images': include_images,
+            'format': format,
+            'include_favicon': include_favicon
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.extract_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=15.0)  # Longer timeout for extraction
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Extract API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily extract timeout")
+                return {"error": "Extract timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily extract error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def crawl(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                   limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                   select_domains: List[str] = None, allow_external: bool = False,
+                   categories: List[str] = None, extract_depth: str = "basic",
+                   format: str = "markdown", include_favicon: bool = False) -> Dict[str, Any]:
+        """Crawl a website starting from base URL"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'extract_depth': extract_depth,
+            'format': format,
+            'include_favicon': include_favicon,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.crawl_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=30.0)  # Longer timeout for crawling
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Crawl API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily crawl timeout")
+                return {"error": "Crawl timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily crawl error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def map(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                 limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                 select_domains: List[str] = None, allow_external: bool = False,
+                 categories: List[str] = None) -> Dict[str, Any]:
+        """Create a map of website structure"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.map_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=20.0)  # Moderate timeout for mapping
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Map API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily map timeout")
+                return {"error": "Map timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily map error: {str(e)}")
+                return {"error": str(e)}
 
 
 # ============================================================================
@@ -370,6 +823,156 @@ class ArxivSearchProvider(BaseSearchProvider):
                 
         return results
     
+    async def extract(self, urls: List[str], extract_depth: str = "basic", 
+                     include_images: bool = False, format: str = "markdown",
+                     include_favicon: bool = False) -> Dict[str, Any]:
+        """Extract content from URLs"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'urls': urls,
+            'extract_depth': extract_depth,
+            'include_images': include_images,
+            'format': format,
+            'include_favicon': include_favicon
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.extract_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=15.0)  # Longer timeout for extraction
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Extract API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily extract timeout")
+                return {"error": "Extract timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily extract error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def crawl(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                   limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                   select_domains: List[str] = None, allow_external: bool = False,
+                   categories: List[str] = None, extract_depth: str = "basic",
+                   format: str = "markdown", include_favicon: bool = False) -> Dict[str, Any]:
+        """Crawl a website starting from base URL"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'extract_depth': extract_depth,
+            'format': format,
+            'include_favicon': include_favicon,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.crawl_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=30.0)  # Longer timeout for crawling
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Crawl API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily crawl timeout")
+                return {"error": "Crawl timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily crawl error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def map(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                 limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                 select_domains: List[str] = None, allow_external: bool = False,
+                 categories: List[str] = None) -> Dict[str, Any]:
+        """Create a map of website structure"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.map_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=20.0)  # Moderate timeout for mapping
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Map API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily map timeout")
+                return {"error": "Map timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily map error: {str(e)}")
+                return {"error": str(e)}
+    
     def _parse_arxiv_response(self, xml_text: str) -> List[SearchResult]:
         """Parse ArXiv XML response"""
         results = []
@@ -416,6 +1019,156 @@ class ArxivSearchProvider(BaseSearchProvider):
                 ))
                 
         return results
+    
+    async def extract(self, urls: List[str], extract_depth: str = "basic", 
+                     include_images: bool = False, format: str = "markdown",
+                     include_favicon: bool = False) -> Dict[str, Any]:
+        """Extract content from URLs"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'urls': urls,
+            'extract_depth': extract_depth,
+            'include_images': include_images,
+            'format': format,
+            'include_favicon': include_favicon
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.extract_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=15.0)  # Longer timeout for extraction
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Extract API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily extract timeout")
+                return {"error": "Extract timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily extract error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def crawl(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                   limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                   select_domains: List[str] = None, allow_external: bool = False,
+                   categories: List[str] = None, extract_depth: str = "basic",
+                   format: str = "markdown", include_favicon: bool = False) -> Dict[str, Any]:
+        """Crawl a website starting from base URL"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'extract_depth': extract_depth,
+            'format': format,
+            'include_favicon': include_favicon,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.crawl_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=30.0)  # Longer timeout for crawling
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Crawl API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily crawl timeout")
+                return {"error": "Crawl timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily crawl error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def map(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                 limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                 select_domains: List[str] = None, allow_external: bool = False,
+                 categories: List[str] = None) -> Dict[str, Any]:
+        """Create a map of website structure"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.map_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=20.0)  # Moderate timeout for mapping
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Map API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily map timeout")
+                return {"error": "Map timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily map error: {str(e)}")
+                return {"error": str(e)}
     
     async def download(self, paper_id: str, save_path: str) -> str:
         """Download paper PDF"""
@@ -489,6 +1242,156 @@ class PubMedSearchProvider(BaseSearchProvider):
                 self.logger.error(f"PubMed search error: {str(e)}")
                 
         return results
+    
+    async def extract(self, urls: List[str], extract_depth: str = "basic", 
+                     include_images: bool = False, format: str = "markdown",
+                     include_favicon: bool = False) -> Dict[str, Any]:
+        """Extract content from URLs"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'urls': urls,
+            'extract_depth': extract_depth,
+            'include_images': include_images,
+            'format': format,
+            'include_favicon': include_favicon
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.extract_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=15.0)  # Longer timeout for extraction
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Extract API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily extract timeout")
+                return {"error": "Extract timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily extract error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def crawl(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                   limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                   select_domains: List[str] = None, allow_external: bool = False,
+                   categories: List[str] = None, extract_depth: str = "basic",
+                   format: str = "markdown", include_favicon: bool = False) -> Dict[str, Any]:
+        """Crawl a website starting from base URL"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'extract_depth': extract_depth,
+            'format': format,
+            'include_favicon': include_favicon,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.crawl_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=30.0)  # Longer timeout for crawling
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Crawl API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily crawl timeout")
+                return {"error": "Crawl timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily crawl error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def map(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                 limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                 select_domains: List[str] = None, allow_external: bool = False,
+                 categories: List[str] = None) -> Dict[str, Any]:
+        """Create a map of website structure"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.map_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=20.0)  # Moderate timeout for mapping
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Map API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily map timeout")
+                return {"error": "Map timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily map error: {str(e)}")
+                return {"error": str(e)}
     
     async def _fetch_summaries(self, session: aiohttp.ClientSession, id_list: List[str]) -> List[SearchResult]:
         """Fetch paper summaries from PubMed"""
@@ -623,6 +1526,156 @@ class SemanticScholarProvider(BaseSearchProvider):
                 
         return results
     
+    async def extract(self, urls: List[str], extract_depth: str = "basic", 
+                     include_images: bool = False, format: str = "markdown",
+                     include_favicon: bool = False) -> Dict[str, Any]:
+        """Extract content from URLs"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'urls': urls,
+            'extract_depth': extract_depth,
+            'include_images': include_images,
+            'format': format,
+            'include_favicon': include_favicon
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.extract_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=15.0)  # Longer timeout for extraction
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Extract API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily extract timeout")
+                return {"error": "Extract timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily extract error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def crawl(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                   limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                   select_domains: List[str] = None, allow_external: bool = False,
+                   categories: List[str] = None, extract_depth: str = "basic",
+                   format: str = "markdown", include_favicon: bool = False) -> Dict[str, Any]:
+        """Crawl a website starting from base URL"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'extract_depth': extract_depth,
+            'format': format,
+            'include_favicon': include_favicon,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.crawl_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=30.0)  # Longer timeout for crawling
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Crawl API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily crawl timeout")
+                return {"error": "Crawl timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily crawl error: {str(e)}")
+                return {"error": str(e)}
+    
+    async def map(self, url: str, max_depth: int = 1, max_breadth: int = 20,
+                 limit: int = 50, instructions: str = None, select_paths: List[str] = None,
+                 select_domains: List[str] = None, allow_external: bool = False,
+                 categories: List[str] = None) -> Dict[str, Any]:
+        """Create a map of website structure"""
+        if not self.api_key:
+            raise ValueError("TAVILY_API_KEY not configured")
+        
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        
+        payload = {
+            'api_key': self.api_key,
+            'url': url,
+            'max_depth': max_depth,
+            'max_breadth': max_breadth,
+            'limit': limit,
+            'allow_external': allow_external
+        }
+        
+        if instructions:
+            payload['instructions'] = instructions
+        if select_paths:
+            payload['select_paths'] = select_paths
+        if select_domains:
+            payload['select_domains'] = select_domains
+        if categories:
+            payload['categories'] = categories
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    self.map_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=20.0)  # Moderate timeout for mapping
+                ) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        error_msg = f"Tavily Map API error: {response.status}"
+                        self.logger.error(error_msg)
+                        return {"error": error_msg, "status": response.status}
+                        
+            except asyncio.TimeoutError:
+                self.logger.error("Tavily map timeout")
+                return {"error": "Map timeout"}
+            except Exception as e:
+                self.logger.error(f"Tavily map error: {str(e)}")
+                return {"error": str(e)}
+    
     async def download(self, paper_id: str, save_path: str) -> str:
         """Download paper if open access PDF is available"""
         headers = {}
@@ -754,6 +1807,50 @@ class SearchManagerEngine(BaseFeature):
                 "parameters": {
                     "paper_id": "Paper identifier",
                     "provider": "Which provider to use"
+                }
+            },
+            {
+                "name": "tavily_extract",
+                "description": "Extract and process content from specified URLs with advanced parsing capabilities",
+                "parameters": {
+                    "urls": "List of URLs to extract content from",
+                    "extract_depth": "Depth of extraction - 'basic' or 'advanced' (use advanced for LinkedIn)",
+                    "include_images": "Include images from the URLs (default: false)",
+                    "format": "Output format - 'markdown' or 'text' (default: markdown)",
+                    "include_favicon": "Include favicon URLs (default: false)"
+                }
+            },
+            {
+                "name": "tavily_crawl",
+                "description": "Crawl a website systematically starting from a base URL, following internal links",
+                "parameters": {
+                    "url": "The root URL to begin the crawl",
+                    "max_depth": "Max depth of crawl (default: 1)",
+                    "max_breadth": "Max links per level (default: 20)",
+                    "limit": "Total links to process (default: 50)",
+                    "instructions": "Natural language instructions for the crawler",
+                    "select_paths": "Regex patterns for URL paths (e.g., /docs/.*, /api/v1.*)",
+                    "select_domains": "Regex patterns for domains",
+                    "allow_external": "Allow external domain links (default: false)",
+                    "categories": "Filter by categories: Careers, Blog, Documentation, About, Pricing, Community, Developers, Contact, Media",
+                    "extract_depth": "'basic' or 'advanced' extraction",
+                    "format": "'markdown' or 'text' output",
+                    "include_favicon": "Include favicon URLs"
+                }
+            },
+            {
+                "name": "tavily_map",
+                "description": "Create a structured map of website URLs for site analysis and navigation understanding",
+                "parameters": {
+                    "url": "The root URL to begin mapping",
+                    "max_depth": "Max depth of mapping (default: 1)",
+                    "max_breadth": "Max links per level (default: 20)",
+                    "limit": "Total links to process (default: 50)",
+                    "instructions": "Natural language instructions",
+                    "select_paths": "Regex patterns for URL paths",
+                    "select_domains": "Regex patterns for domains",
+                    "allow_external": "Allow external domain links (default: false)",
+                    "categories": "Filter by categories"
                 }
             }
         ]
@@ -977,6 +2074,148 @@ class SearchManagerEngine(BaseFeature):
                 
         except Exception as e:
             return self.handle_error(f"paper_read({provider})", e)
+    
+    async def tavily_extract(
+        self,
+        urls: List[str],
+        extract_depth: str = "basic",
+        include_images: bool = False,
+        format: str = "markdown",
+        include_favicon: bool = False
+    ) -> ToolResponse:
+        """Extract content from URLs using Tavily"""
+        try:
+            # Check if Tavily is available
+            if 'tavily' not in self.web_providers:
+                return ToolResponse(
+                    success=False,
+                    error="Tavily provider not available. Please configure TAVILY_API_KEY"
+                )
+            
+            tavily_provider = self.web_providers['tavily']
+            result = await tavily_provider.extract(
+                urls=urls,
+                extract_depth=extract_depth,
+                include_images=include_images,
+                format=format,
+                include_favicon=include_favicon
+            )
+            
+            if "error" in result:
+                return ToolResponse(
+                    success=False,
+                    error=result["error"]
+                )
+            
+            return ToolResponse(
+                success=True,
+                data=result
+            )
+            
+        except Exception as e:
+            return self.handle_error("tavily_extract", e)
+    
+    async def tavily_crawl(
+        self,
+        url: str,
+        max_depth: int = 1,
+        max_breadth: int = 20,
+        limit: int = 50,
+        instructions: Union[str, None] = None,
+        select_paths: Union[List[str], None] = None,
+        select_domains: Union[List[str], None] = None,
+        allow_external: bool = False,
+        categories: Union[List[str], None] = None,
+        extract_depth: str = "basic",
+        format: str = "markdown",
+        include_favicon: bool = False
+    ) -> ToolResponse:
+        """Crawl a website using Tavily"""
+        try:
+            # Check if Tavily is available
+            if 'tavily' not in self.web_providers:
+                return ToolResponse(
+                    success=False,
+                    error="Tavily provider not available. Please configure TAVILY_API_KEY"
+                )
+            
+            tavily_provider = self.web_providers['tavily']
+            result = await tavily_provider.crawl(
+                url=url,
+                max_depth=max_depth,
+                max_breadth=max_breadth,
+                limit=limit,
+                instructions=instructions,
+                select_paths=select_paths,
+                select_domains=select_domains,
+                allow_external=allow_external,
+                categories=categories,
+                extract_depth=extract_depth,
+                format=format,
+                include_favicon=include_favicon
+            )
+            
+            if "error" in result:
+                return ToolResponse(
+                    success=False,
+                    error=result["error"]
+                )
+            
+            return ToolResponse(
+                success=True,
+                data=result
+            )
+            
+        except Exception as e:
+            return self.handle_error("tavily_crawl", e)
+    
+    async def tavily_map(
+        self,
+        url: str,
+        max_depth: int = 1,
+        max_breadth: int = 20,
+        limit: int = 50,
+        instructions: Union[str, None] = None,
+        select_paths: Union[List[str], None] = None,
+        select_domains: Union[List[str], None] = None,
+        allow_external: bool = False,
+        categories: Union[List[str], None] = None
+    ) -> ToolResponse:
+        """Create a map of website structure using Tavily"""
+        try:
+            # Check if Tavily is available
+            if 'tavily' not in self.web_providers:
+                return ToolResponse(
+                    success=False,
+                    error="Tavily provider not available. Please configure TAVILY_API_KEY"
+                )
+            
+            tavily_provider = self.web_providers['tavily']
+            result = await tavily_provider.map(
+                url=url,
+                max_depth=max_depth,
+                max_breadth=max_breadth,
+                limit=limit,
+                instructions=instructions,
+                select_paths=select_paths,
+                select_domains=select_domains,
+                allow_external=allow_external,
+                categories=categories
+            )
+            
+            if "error" in result:
+                return ToolResponse(
+                    success=False,
+                    error=result["error"]
+                )
+            
+            return ToolResponse(
+                success=True,
+                data=result
+            )
+            
+        except Exception as e:
+            return self.handle_error("tavily_map", e)
             
     def _consolidate_results(self, results: List[SearchResult], max_results: int) -> List[SearchResult]:
         """Consolidate and deduplicate web search results"""
