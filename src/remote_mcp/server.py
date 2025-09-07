@@ -190,7 +190,7 @@ async def fs_read_file(path: str) -> Dict[str, Any]:
             "encoding": "utf-8"
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_read_multiple_files(paths: List[str]) -> Dict[str, Any]:
@@ -257,7 +257,7 @@ async def fs_write_file(path: str, content: str) -> Dict[str, Any]:
             "message": f"Successfully wrote {len(content)} bytes to {file_path}"
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_edit_file(
@@ -305,7 +305,7 @@ async def fs_edit_file(
             "message": f"{'Preview of' if dry_run else 'Applied'} {len(changes_made)} edits to {file_path}"
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_create_directory(path: str) -> Dict[str, Any]:
@@ -326,7 +326,7 @@ async def fs_create_directory(path: str) -> Dict[str, Any]:
             "message": f"Directory {dir_path} created/verified successfully"
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_list_directory(path: str) -> Dict[str, Any]:
@@ -358,7 +358,7 @@ async def fs_list_directory(path: str) -> Dict[str, Any]:
             "directories": sum(1 for i in items if i.startswith("[DIR]"))
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_directory_tree(path: str) -> Dict[str, Any]:
@@ -407,7 +407,7 @@ async def fs_directory_tree(path: str) -> Dict[str, Any]:
             "root": str(root_path)
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_move_file(source: str, destination: str) -> Dict[str, Any]:
@@ -448,7 +448,7 @@ async def fs_move_file(source: str, destination: str) -> Dict[str, Any]:
             "message": f"Successfully moved {src_path} to {dst_path}"
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_copy_file(source: str, destination: str) -> Dict[str, Any]:
@@ -487,7 +487,7 @@ async def fs_copy_file(source: str, destination: str) -> Dict[str, Any]:
             "message": f"Successfully copied {src_path} to {dst_path}"
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_copy_directory(
@@ -552,7 +552,7 @@ async def fs_copy_directory(
             "message": f"Successfully copied directory {src_path} to {dst_path}"
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_delete_file(
@@ -587,7 +587,7 @@ async def fs_delete_file(
             "can_restore": True
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_restore_deleted(path: str) -> Dict[str, Any]:
@@ -622,7 +622,7 @@ async def fs_restore_deleted(path: str) -> Dict[str, Any]:
             "message": f"Successfully restored {file_path}"
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_list_deleted() -> Dict[str, Any]:
@@ -699,7 +699,7 @@ async def fs_search_files(
             "excluded_patterns": exclude_patterns
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_get_file_info(path: str) -> Dict[str, Any]:
@@ -744,7 +744,7 @@ async def fs_get_file_info(path: str) -> Dict[str, Any]:
         
         return info
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": repr(e)}
 
 @mcp.tool()
 async def fs_list_allowed_directories() -> Dict[str, Any]:

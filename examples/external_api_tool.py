@@ -219,4 +219,4 @@ async def rate_limited_api_call(
                 response.raise_for_status()
                 return {"data": response.json()}
             except httpx.HTTPError as e:
-                return {"error": str(e)}
+                return {"error": repr(e)}
