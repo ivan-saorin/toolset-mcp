@@ -140,6 +140,61 @@ async def test_search_manager():
         else:
             print(f"Error: {result.error}")
     
+    # Test 5: Tavily Extract (if configured)
+    if 'tavily' in search_manager.web_providers:
+        print("\nTest 5: Tavily Content Extraction")
+        print("-" * 40)
+        
+        # Use a URL from previous search results if available
+        test_urls = ["https://example.com"]
+        if search_manager.web_providers and 'result' in locals() and result.success:
+            # Get first URL from previous search
+            if result.data['results']:
+                test_urls = [result.data['results'][0]['url']]
+        
+        print(f"Extracting content from: {test_urls[0]}")
+        
+        extract_result = await search_manager.tavily_extract(
+            urls=test_urls,
+            extract_depth="basic",
+            format="markdown"
+        )
+        
+        if extract_result.success:
+            print("✓ Content extraction successful")
+            data = extract_result.data
+            if 'results' in data and data['results']:
+                content = data['results'][0].get('raw_content', data['results'][0].get('content', ''))
+                if content:
+                    print(f"   Extracted {len(content)} characters")
+                    print(f"   Preview: {content[:100]}...")
+        else:
+            print(f"Error: {extract_result.error}")
+    
+    # Test 6: Tavily Map (if configured)
+    if 'tavily' in search_manager.web_providers:
+        print("\nTest 6: Tavily Site Mapping")
+        print("-" * 40)
+        
+        test_url = "https://example.com"
+        print(f"Mapping site structure for: {test_url}")
+        
+        map_result = await search_manager.tavily_map(
+            url=test_url,
+            max_depth=1,
+            limit=10
+        )
+        
+        if map_result.success:
+            print("✓ Site mapping successful")
+            data = map_result.data
+            if 'results' in data:
+                print(f"   Found {len(data['results'])} pages")
+                for i, page in enumerate(data['results'][:5], 1):
+                    print(f"   {i}. {page}")
+        else:
+            print(f"Error: {map_result.error}")
+    
     print("\n=== Test Complete ===")
 
 

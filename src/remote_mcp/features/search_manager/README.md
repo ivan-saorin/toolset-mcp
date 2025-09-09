@@ -22,6 +22,25 @@ results = await web_search(
     providers=["tavily"]  # AI-enhanced results
 )
 
+# Extract content from URLs (NEW)
+extracted = await tavily_extract(
+    urls=["https://example.com/article"],
+    extract_depth="advanced"
+)
+
+# Crawl a website (IF ALLOWED BY API_KAY)
+crawl_results = await tavily_crawl(
+    url="https://docs.example.com",
+    max_depth=2,
+    categories=["Documentation"]
+)
+
+# Map website structure (IF ALLOWED BY API_KAY)
+site_map = await tavily_map(
+    url="https://example.com",
+    limit=100
+)
+
 # Academic paper search
 papers = await paper_search("transformer architecture")
 
@@ -37,6 +56,7 @@ download = await paper_download(
 ### Web Search Providers
 - **Brave**: General web search with privacy focus
 - **Tavily**: AI-enhanced search with better context understanding
+  - Also provides: content extraction, website crawling, and site mapping tools
 - **SearXNG**: Privacy-focused meta-search engine (self-hosted or public instances)
 
 ### Academic Paper Providers
@@ -193,6 +213,97 @@ Download and extract text content from a paper.
 - `provider`: Which provider to use
 
 **Returns:** ToolResponse with extracted text (Note: PDF extraction not fully implemented)
+
+### tavily_extract
+
+```python
+async def tavily_extract(
+    urls: List[str],
+    extract_depth: str = "basic",
+    include_images: bool = False,
+    format: str = "markdown",
+    include_favicon: bool = False
+) -> ToolResponse
+```
+
+Extract and process content from specified URLs.
+
+**Parameters:**
+- `urls`: List of URLs to extract content from
+- `extract_depth`: "basic" or "advanced" - use advanced for LinkedIn or complex pages
+- `include_images`: Include images found in the content
+- `format`: Output format - "markdown" or "text"
+- `include_favicon`: Include favicon URLs
+
+**Returns:** ToolResponse with extracted content for each URL
+
+### tavily_crawl
+
+```python
+async def tavily_crawl(
+    url: str,
+    max_depth: int = 1,
+    max_breadth: int = 20,
+    limit: int = 50,
+    instructions: Union[str, None] = None,
+    select_paths: Union[List[str], None] = None,
+    select_domains: Union[List[str], None] = None,
+    allow_external: bool = False,
+    categories: Union[List[str], None] = None,
+    extract_depth: str = "basic",
+    format: str = "markdown",
+    include_favicon: bool = False
+) -> ToolResponse
+```
+
+Crawl a website systematically starting from a base URL.
+
+**Parameters:**
+- `url`: The root URL to begin crawling
+- `max_depth`: How deep to crawl from the base URL (default: 1)
+- `max_breadth`: Max links to follow per page (default: 20)
+- `limit`: Total links to process before stopping (default: 50)
+- `instructions`: Natural language instructions for the crawler
+- `select_paths`: Regex patterns for URL paths (e.g., ["/docs/.*", "/api/v1.*"])
+- `select_domains`: Regex patterns for domains
+- `allow_external`: Allow crawling external domain links
+- `categories`: Filter by categories: ["Careers", "Blog", "Documentation", "About", "Pricing", "Community", "Developers", "Contact", "Media"]
+- `extract_depth`: "basic" or "advanced" extraction
+- `format`: "markdown" or "text" output format
+- `include_favicon`: Include favicon URLs
+
+**Returns:** ToolResponse with crawled pages and their content
+
+### tavily_map
+
+```python
+async def tavily_map(
+    url: str,
+    max_depth: int = 1,
+    max_breadth: int = 20,
+    limit: int = 50,
+    instructions: Union[str, None] = None,
+    select_paths: Union[List[str], None] = None,
+    select_domains: Union[List[str], None] = None,
+    allow_external: bool = False,
+    categories: Union[List[str], None] = None
+) -> ToolResponse
+```
+
+Create a structured map of website URLs.
+
+**Parameters:**
+- `url`: The root URL to begin mapping
+- `max_depth`: How deep to map from the base URL (default: 1)
+- `max_breadth`: Max links to follow per page (default: 20)
+- `limit`: Total links to process before stopping (default: 50)
+- `instructions`: Natural language instructions
+- `select_paths`: Regex patterns for URL paths
+- `select_domains`: Regex patterns for domains
+- `allow_external`: Allow mapping external domain links
+- `categories`: Filter by categories
+
+**Returns:** ToolResponse with structured site map
 
 ## Result Format
 

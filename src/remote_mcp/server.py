@@ -36,7 +36,7 @@ logger = logging.getLogger("atlas-toolset")
 
 # Initialize MCP server
 mcp = FastMCP("Atlas Toolset MCP")
-mcp.description = "Enhanced utility toolset with calculator, text analysis, task management, time, path converter, and filesystem features"
+mcp.description = "Enhanced utility toolset with calculator, text analysis, task management, time, path converter, filesystem features, and comprehensive search capabilities including web search, paper search, and Tavily content extraction/crawling/mapping"
 
 # Initialize feature engines
 calculator = CalculatorEngine()
@@ -159,7 +159,8 @@ async def system_info() -> Dict[str, Any]:
                 "version": search_manager.version,
                 "web_providers": list(search_manager.web_providers.keys()),
                 "paper_providers": list(search_manager.paper_providers.keys()),
-                "capabilities": ["parallel_search", "deduplication", "unified_format", "pdf_download"]
+                "capabilities": ["parallel_search", "deduplication", "unified_format", "pdf_download", "content_extraction", "website_crawling", "site_mapping"],
+                "tavily_tools": ["search", "extract", "crawl", "map"] if 'tavily' in search_manager.web_providers else []
             },
             "filesystem": {
                 "version": "1.1.0",
@@ -1234,6 +1235,98 @@ async def paper_read(
     response = await search_manager.paper_read(paper_id, provider)
     return response.to_dict()
 
+@mcp.tool()
+async def tavily_extract(
+    urls: List[str],
+    extract_depth: str = "basic",
+    include_images: bool = False,
+    format: str = "markdown",
+    include_favicon: bool = False
+) -> Dict[str, Any]:
+    """
+    Extract and process content from specified URLs with advanced parsing capabilities.
+    
+    Args:
+        urls: List of URLs to extract content from
+        extract_depth: Depth of extraction - 'basic' or 'advanced' (use advanced for LinkedIn or complex pages)
+        include_images: Include images found in the content
+        format: Output format - 'markdown' or 'text'
+        include_favicon: Include favicon URLs
+    """
+    response = await search_manager.tavily_extract(urls, extract_depth, include_images, format, include_favicon)
+    return response.to_dict()
+
+# @mcp.tool()
+# async def tavily_crawl(
+#     url: str,
+#     max_depth: int = 1,
+#     max_breadth: int = 20,
+#     limit: int = 50,
+#     instructions: str = None,
+#     select_paths: List[str] = None,
+#     select_domains: List[str] = None,
+#     allow_external: bool = False,
+#     categories: List[str] = None,
+#     extract_depth: str = "basic",
+#     format: str = "markdown",
+#     include_favicon: bool = False
+# ) -> Dict[str, Any]:
+#     """
+#     Crawl a website systematically starting from a base URL, following internal links.
+    
+#     Args:
+#         url: The root URL to begin the crawl
+#         max_depth: Max depth of crawl (default: 1)
+#         max_breadth: Max links per level (default: 20)
+#         limit: Total links to process (default: 50)
+#         instructions: Natural language instructions for the crawler
+#         select_paths: Regex patterns for URL paths (e.g., ['/docs/.*', '/api/v1.*'])
+#         select_domains: Regex patterns for domains
+#         allow_external: Allow external domain links (default: false)
+#         categories: Filter by categories: ['Careers', 'Blog', 'Documentation', 'About', 'Pricing', 'Community', 'Developers', 'Contact', 'Media']
+#         extract_depth: 'basic' or 'advanced' extraction
+#         format: 'markdown' or 'text' output
+#         include_favicon: Include favicon URLs
+#     """
+#     response = await search_manager.tavily_crawl(
+#         url, max_depth, max_breadth, limit, instructions,
+#         select_paths, select_domains, allow_external, categories,
+#         extract_depth, format, include_favicon
+#     )
+#     return response.to_dict()
+
+# @mcp.tool()
+# async def tavily_map(
+#     url: str,
+#     max_depth: int = 1,
+#     max_breadth: int = 20,
+#     limit: int = 50,
+#     instructions: str = None,
+#     select_paths: List[str] = None,
+#     select_domains: List[str] = None,
+#     allow_external: bool = False,
+#     categories: List[str] = None
+# ) -> Dict[str, Any]:
+#     """
+#     Create a structured map of website URLs for site analysis and navigation understanding.
+    
+#     Args:
+#         url: The root URL to begin mapping
+#         max_depth: Max depth of mapping (default: 1)
+#         max_breadth: Max links per level (default: 20)
+#         limit: Total links to process (default: 50)
+#         instructions: Natural language instructions
+#         select_paths: Regex patterns for URL paths
+#         select_domains: Regex patterns for domains
+#         allow_external: Allow external domain links (default: false)
+#         categories: Filter by categories
+#     """
+#     response = await search_manager.tavily_map(
+#         url, max_depth, max_breadth, limit, instructions,
+#         select_paths, select_domains, allow_external, categories
+#     )
+#     return response.to_dict()
+
 # ============================================================================
 # ASGI APPLICATION WITH HEALTH CHECK
 # ============================================================================
@@ -1291,7 +1384,7 @@ if __name__ == "__main__":
     logger.info(f"Starting Atlas Toolset MCP Server v3.1.0")
     logger.info(f"Server will be available at {host}:{port}/mcp")
     logger.info(f"Health check at {host}:{port}/health")
-    logger.info(f"Features loaded: calculator, text_analyzer, task_manager, time, path_converter, filesystem, search_manager")
+    logger.info(f"Features loaded: calculator, text_analyzer, task_manager, time, path_converter, filesystem, search_manager (with Tavily extract/crawl/map)")
     logger.info(f"Filesystem allowed directories: {[str(d) for d in ALLOWED_DIRECTORIES]}")
     logger.info(f"Italian date format enabled with shortcuts")
     
