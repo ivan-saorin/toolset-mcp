@@ -26,7 +26,7 @@ services:
       # Academic Search Providers (optional)
       PUBMED_API_KEY: "$$cap_pubmed_api_key"
       SEMANTIC_SCHOLAR_API_KEY: "$$cap_semantic_api_key"
-    
+    user: "1000:1000"  # Run as UID/GID 1000 (auto user)
     volumes:
       # Map host directories to container paths
       # Adjust these based on your CapRover setup
