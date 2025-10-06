@@ -13,7 +13,7 @@ from src.remote_mcp.shared.base import BaseFeature, ToolResponse
 class ExternalAPIEngine(BaseFeature):
     """Example feature showing external API integration patterns"""
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str = None):
         super().__init__("external_api", "1.0.0")
         
         # API configuration
@@ -64,7 +64,7 @@ class ExternalAPIEngine(BaseFeature):
     
     async def api_fetch_data(self, 
                             endpoint: str, 
-                            params: Optional[Dict[str, Any]] = None,
+                            params: Dict[str, Any] = None,
                             method: str = "GET") -> ToolResponse:
         """
         Fetch data from external API with error handling and retry

@@ -56,7 +56,7 @@ class CalculatorEngine(BaseFeature):
             }
         ]
     
-    def calculate(self, a: Union[float, List[float]], b: Optional[float] = None, 
+    def calculate(self, a: Union[float, List[float]], b: float = None, 
                   operation: str = "add") -> ToolResponse:
         """
         Perform mathematical calculations
@@ -133,7 +133,7 @@ class CalculatorEngine(BaseFeature):
         except Exception as e:
             return self.handle_error(f"calculate({operation})", e)
     
-    def calculate_advanced(self, expression: str, variables: Optional[Dict[str, float]] = None) -> ToolResponse:
+    def calculate_advanced(self, expression: str, variables: Dict[str, float] = None) -> ToolResponse:
         """
         Evaluate mathematical expressions safely
         

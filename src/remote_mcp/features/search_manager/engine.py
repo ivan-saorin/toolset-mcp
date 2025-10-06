@@ -33,15 +33,15 @@ class SearchResult:
     metadata: Dict[str, Any] = field(default_factory=dict)
     
     # For papers
-    authors: Union[List[str], None] = None
-    published_date: Union[str, None] = None
-    doi: Union[str, None] = None
-    abstract: Union[str, None] = None
-    pdf_url: Union[str, None] = None
+    authors: Union[List[str], None = None
+    published_date: Union[str, None = None
+    doi: Union[str, None = None
+    abstract: Union[str, None = None
+    pdf_url: Union[str, None = None
     
     # For web results
-    domain: Union[str, None] = None
-    published_time: Union[str, None] = None
+    domain: Union[str, None = None
+    published_time: Union[str, None = None
 
 
 @dataclass
@@ -1858,7 +1858,7 @@ class SearchManagerEngine(BaseFeature):
     async def web_search(
         self,
         query: str,
-        providers: Union[List[str], None] = None,
+        providers: Union[List[str], None = None,
         max_results: int = 10
     ) -> ToolResponse:
         """Search the web using specified providers"""
@@ -1927,7 +1927,7 @@ class SearchManagerEngine(BaseFeature):
     async def paper_search(
         self,
         query: str,
-        providers: Union[List[str], None] = None,
+        providers: Union[List[str], None = None,
         max_results: int = 10
     ) -> ToolResponse:
         """Search academic papers using specified providers"""
@@ -1997,7 +1997,7 @@ class SearchManagerEngine(BaseFeature):
         self,
         paper_id: str,
         provider: str,
-        save_path: Union[str, None] = None
+        save_path: Union[str, None = None
     ) -> ToolResponse:
         """Download a paper PDF"""
         try:
@@ -2121,11 +2121,11 @@ class SearchManagerEngine(BaseFeature):
         max_depth: int = 1,
         max_breadth: int = 20,
         limit: int = 50,
-        instructions: Union[str, None] = None,
-        select_paths: Union[List[str], None] = None,
-        select_domains: Union[List[str], None] = None,
+        instructions: Union[str, None = None,
+        select_paths: Union[List[str], None = None,
+        select_domains: Union[List[str], None = None,
         allow_external: bool = False,
-        categories: Union[List[str], None] = None,
+        categories: Union[List[str], None = None,
         extract_depth: str = "basic",
         format: str = "markdown",
         include_favicon: bool = False
@@ -2175,11 +2175,11 @@ class SearchManagerEngine(BaseFeature):
         max_depth: int = 1,
         max_breadth: int = 20,
         limit: int = 50,
-        instructions: Union[str, None] = None,
-        select_paths: Union[List[str], None] = None,
-        select_domains: Union[List[str], None] = None,
+        instructions: Union[str, None = None,
+        select_paths: Union[List[str], None = None,
+        select_domains: Union[List[str], None = None,
         allow_external: bool = False,
-        categories: Union[List[str], None] = None
+        categories: Union[List[str], None = None
     ) -> ToolResponse:
         """Create a map of website structure using Tavily"""
         try:

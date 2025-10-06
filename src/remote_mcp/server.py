@@ -838,7 +838,7 @@ async def calculate(
 @mcp.tool()
 async def calculate_advanced(
     expression: str,
-    variables: Dict[str, float] = None
+    variables: Dict[str, float = None
 ) -> Dict[str, Any]:
     """
     Evaluate mathematical expressions safely

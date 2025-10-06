@@ -145,7 +145,7 @@ BRAVE_API_KEY=test_key python test_features.py
 ```python
 async def web_search(
     query: str,
-    providers: Union[List[str], None] = None,
+    providers: Union[List[str], None = None,
     max_results: int = 10
 ) -> ToolResponse
 ```
@@ -164,7 +164,7 @@ Search the web using specified providers.
 ```python
 async def paper_search(
     query: str,
-    providers: Union[List[str], None] = None,
+    providers: Union[List[str], None = None,
     max_results: int = 10
 ) -> ToolResponse
 ```
@@ -184,7 +184,7 @@ Search academic papers.
 async def paper_download(
     paper_id: str,
     provider: str,
-    save_path: Union[str, None] = None
+    save_path: Union[str, None = None
 ) -> ToolResponse
 ```
 
@@ -245,11 +245,11 @@ async def tavily_crawl(
     max_depth: int = 1,
     max_breadth: int = 20,
     limit: int = 50,
-    instructions: Union[str, None] = None,
-    select_paths: Union[List[str], None] = None,
-    select_domains: Union[List[str], None] = None,
+    instructions: Union[str, None = None,
+    select_paths: Union[List[str], None = None,
+    select_domains: Union[List[str], None = None,
     allow_external: bool = False,
-    categories: Union[List[str], None] = None,
+    categories: Union[List[str], None = None,
     extract_depth: str = "basic",
     format: str = "markdown",
     include_favicon: bool = False
@@ -282,11 +282,11 @@ async def tavily_map(
     max_depth: int = 1,
     max_breadth: int = 20,
     limit: int = 50,
-    instructions: Union[str, None] = None,
-    select_paths: Union[List[str], None] = None,
-    select_domains: Union[List[str], None] = None,
+    instructions: Union[str, None = None,
+    select_paths: Union[List[str], None = None,
+    select_domains: Union[List[str], None = None,
     allow_external: bool = False,
-    categories: Union[List[str], None] = None
+    categories: Union[List[str], None = None
 ) -> ToolResponse
 ```
 

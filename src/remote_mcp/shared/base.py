@@ -15,8 +15,8 @@ class ToolResponse:
     """Standard response structure for all tools"""
     success: bool
     data: Dict[str, Any] = None
-    error: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    error: str = None
+    metadata: Dict[str, Any] = None
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
@@ -44,7 +44,7 @@ class BaseFeature(ABC):
         """Return list of tools provided by this feature"""
         pass
     
-    def validate_input(self, data: Dict[str, Any], required: List[str]) -> Optional[str]:
+    def validate_input(self, data: Dict[str, Any], required: List[str]) -> str:
         """
         Validate that required fields are present
         

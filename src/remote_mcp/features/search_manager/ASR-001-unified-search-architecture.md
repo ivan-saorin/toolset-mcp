@@ -46,7 +46,7 @@ SearchManagerEngine
 
 4. **Graceful Degradation**: If a provider fails or isn't configured, the search continues with remaining providers.
 
-5. **No Optional[] Usage**: Due to FastMCP limitations, we use `Union[List[str], None]` instead of `Optional[]`.
+5. **No ] Usage**: Due to FastMCP limitations, we use `Union[List[str], None]` instead of `]`.
 
 6. **Environment-Based Configuration**: Each provider validates its required environment variables on initialization.
 
@@ -94,7 +94,7 @@ class SearchResult:
 ### Parallel Search Pattern
 
 ```python
-async def web_search(self, query: str, providers: Union[List[str], None] = None, max_results: int = 10):
+async def web_search(self, query: str, providers: Union[List[str], None = None, max_results: int = 10):
     # Determine providers
     if providers is None:
         providers = list(self.web_providers.keys())

@@ -383,7 +383,7 @@ class TimeEngine(BaseFeature):
         except Exception as e:
             return self.handle_error("time_format", e)
     
-    def _parse_shortcut(self, shortcut: str) -> Optional[datetime]:
+    def _parse_shortcut(self, shortcut: str) -> datetime]:
         """
         Parse date shortcuts including combinations like 'tomorrow EoD'
         
@@ -472,7 +472,7 @@ class TimeEngine(BaseFeature):
         # Only return a result if we found a valid keyword
         return result if valid_keyword_found else None
     
-    def _parse_date_input(self, date_input: str) -> Optional[datetime]:
+    def _parse_date_input(self, date_input: str) -> datetime]:
         """Parse date input which could be ISO format or a shortcut"""
         # Try common date formats first (more likely than shortcuts)
         date_input = date_input.strip()
@@ -507,7 +507,7 @@ class TimeEngine(BaseFeature):
         
         return None
     
-    def _parse_with_format(self, date_input: str, format_type: str) -> Optional[datetime]:
+    def _parse_with_format(self, date_input: str, format_type: str) -> datetime]:
         """Parse date with specific format"""
         format_map = {
             "italian": "%d/%m/%Y %H:%M:%S",

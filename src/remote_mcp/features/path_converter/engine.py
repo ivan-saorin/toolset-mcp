@@ -162,7 +162,7 @@ class PathConverterEngine(BaseFeature):
         
         return path
     
-    def convert_path(self, path: str, force_direction: Optional[str] = None) -> ToolResponse:
+    def convert_path(self, path: str, force_direction: str = None) -> ToolResponse:
         """
         Convert a single path between Windows and Linux formats
         
@@ -213,7 +213,7 @@ class PathConverterEngine(BaseFeature):
         except Exception as e:
             return self.handle_error("convert_path", e)
     
-    def convert_multiple_paths(self, paths: List[str], force_direction: Optional[str] = None) -> ToolResponse:
+    def convert_multiple_paths(self, paths: List[str], force_direction: str = None) -> ToolResponse:
         """
         Convert multiple paths at once
         

@@ -78,11 +78,11 @@ class TaskManagerEngine(BaseFeature):
                    title: str,
                    description: str = "",
                    priority: str = "medium",
-                   category: Optional[str] = None,
-                   tags: Optional[List[str]] = None,
-                   due_date: Optional[str] = None,
-                   estimated_hours: Optional[float] = None,
-                   dependencies: Optional[List[str]] = None) -> ToolResponse:
+                   category: str = None,
+                   tags: List[str] = None,
+                   due_date: str = None,
+                   estimated_hours: float = None,
+                   dependencies: List[str] = None) -> ToolResponse:
         """
         Create a new task with advanced options
         
@@ -165,10 +165,10 @@ class TaskManagerEngine(BaseFeature):
             return self.handle_error("task_create", e)
     
     def task_list(self,
-                  status: Optional[str] = None,
-                  priority: Optional[str] = None,
-                  category: Optional[str] = None,
-                  tags: Optional[List[str]] = None,
+                  status: str = None,
+                  priority: str = None,
+                  category: str = None,
+                  tags: List[str] = None,
                   overdue: bool = False,
                   limit: int = 50) -> ToolResponse:
         """
@@ -369,8 +369,8 @@ class TaskManagerEngine(BaseFeature):
         except Exception as e:
             return self.handle_error("task_delete", e)
     
-    def task_complete(self, task_id: str, completion_notes: Optional[str] = None,
-                     actual_hours: Optional[float] = None) -> ToolResponse:
+    def task_complete(self, task_id: str, completion_notes: str = None,
+                     actual_hours: float = None) -> ToolResponse:
         """
         Mark a task as complete
         

@@ -114,8 +114,8 @@ class DatabaseEngine(BaseFeature):
     def db_create_note(self, 
                       title: str,
                       content: str = "",
-                      category: Optional[str] = None,
-                      tags: Optional[List[str]] = None) -> ToolResponse:
+                      category: str = None,
+                      tags: List[str] = None) -> ToolResponse:
         """
         Create a new note in the database
         
@@ -164,8 +164,8 @@ class DatabaseEngine(BaseFeature):
             return self.handle_error("db_create_note", e)
     
     def db_search_notes(self,
-                       query: Optional[str] = None,
-                       category: Optional[str] = None,
+                       query: str = None,
+                       category: str = None,
                        limit: int = 50) -> ToolResponse:
         """
         Search notes in the database
@@ -326,7 +326,7 @@ class DatabaseEngine(BaseFeature):
     
     def db_execute_query(self, 
                         query: str,
-                        params: Optional[Tuple] = None) -> ToolResponse:
+                        params: Tuple = None) -> ToolResponse:
         """
         Execute a custom SQL query (read-only for safety)
         
